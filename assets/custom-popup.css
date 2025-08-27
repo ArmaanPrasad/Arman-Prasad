@@ -1,1 +1,86 @@
+/* ===== Popup overlay & dialog ===== */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
 
+/* Toggle visibility */
+.hidden { display: none; }
+
+/* Dialog */
+.popup-content {
+  background: #fff;
+  width: min(600px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 12px;
+  padding: 20px 24px;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Close button */
+#popup-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Body elements */
+#popup-body h2 {
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+#popup-body p {
+  margin: 8px 0;
+}
+#popup-description {
+  margin: 10px 0 14px;
+}
+#variant-select {
+  width: 100%;
+  padding: 10px;
+  margin: 12px 0 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* CTA */
+#add-to-cart {
+  width: 100%;
+  padding: 12px 16px;
+  background: #111111;
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+#add-to-cart:hover {
+  transform: translateY(-1px);
+}
+
+/* Prevent background scroll when popup open */
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .popup-content {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
