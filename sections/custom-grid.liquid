@@ -11,7 +11,14 @@ Custom Grid Section
       {% assign product = all_products[block.settings.product] %}
       {% if product %}
         <div class="grid-item" data-handle="{{ product.handle }}">
-          <img src="{{ product.featured_image | img_url: 'medium' }}" alt="{{ product.title }}">
+          {% if product.featured_image %}
+  <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
+{% elsif product.images.size > 0 %}
+  <img src="{{ product.images[0] | image_url: width: 400 }}" alt="{{ product.title }}">
+{% else %}
+  <img src="{{ 'placeholder-image.png' | asset_url }}" alt="No image available">
+{% endif %}
+
           <h3>{{ product.title }}</h3>
           <p>{{ product.price | money }}</p>
         </div>
