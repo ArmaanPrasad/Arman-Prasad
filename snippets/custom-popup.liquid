@@ -3,13 +3,7 @@
     <span class="popup-close" role="button" aria-label="Close popup">&times;</span>
     
     <!-- Product Image -->
-    <img 
-      id="popupProductImage" 
-      src="{{ 'placeholder.png' | asset_url }}" 
-      alt="Product image" 
-      width="500" 
-      height="500" 
-      style="max-width:100%; border-radius:8px; margin-bottom:20px;" />
+    {{ 'product-1' | placeholder_svg_tag: 'popup-placeholder' }}
 
     <!-- Product Title -->
     <h3 id="popupProductTitle" style="margin-bottom:10px;">Product Title</h3>
