@@ -1,146 +1,32 @@
-<div id="ProductPopup" class="pp hidden" role="dialog" aria-modal="true" aria-label="Quick view dialog">
-  <div class="pp-overlay" data-close></div>
-  <div class="pp-box" role="document">
-    <button class="pp-close" aria-label="Close" data-close>&times;</button>
-
-    <div class="pp-grid">
-      <div class="pp-left">
-        <img
-          class="pp-image"
-          src=""
-          alt=""
-          width="600"
-          height="600"
-          loading="lazy"
-          style="background:#f6f6f6;border-radius:8px;" />
-      </div>
-
-      <div class="pp-right">
-        <h2 class="pp-title"></h2>
-        <p class="pp-price"></p>
-        <div class="pp-desc"></div>
-
-        <form class="pp-form" method="post" action="{{ routes.cart_add_url }}">
-          <label for="pp-variant" class="visually-hidden">Variant</label>
-          <select name="id" id="pp-variant" class="pp-variant"></select>
-          <button type="submit" class="pp-add">Add to Cart</button>
-        </form>
-      </div>
-    </div>
+<div id="product-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:20px; max-width:500px; width:90%; border-radius:8px; position:relative;">
+    <button onclick="document.getElementById('product-popup').style.display='none'" style="position:absolute; top:10px; right:10px;">X</button>
+    <h2 class="popup-title"></h2>
+    <p class="popup-price"></p>
+    <div class="popup-description"></div>
+    <select class="popup-variants"></select>
+    <button class="popup-add-to-cart">Add to Cart</button>
   </div>
 </div>
 
-<style>
-.pp.hidden { display: none; }
-.pp { position: fixed; inset: 0; z-index: 9999; display:flex; align-items:center; justify-content:center; }
-.pp-overlay { position:absolute; inset:0; background:rgba(0,0,0,.5); }
-.pp-box {
-  position: relative; background:#fff; border-radius:12px; padding:24px;
-  width: min(920px, 94vw);
-}
-.pp-close { position:absolute; top:10px; right:14px; border:none; background:none; font-size:32px; cursor:pointer; }
-.pp-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.pp-title { font-size:26px; font-weight:700; margin:0; }
-.pp-price { font-size:20px; font-weight:600; color:#e63946; margin:6px 0 12px; }
-.pp-desc { color:#555; font-size:14px; line-height:1.5; max-height: 180px; overflow:auto; }
-.pp-variant { width:100%; padding:10px; border-radius:6px; border:1px solid #ddd; margin: 8px 0 12px; }
-.pp-add { padding:12px 18px; border:none; border-radius:6px; background:#000; color:#fff; cursor:pointer; }
-.pp-add:hover { background:#333; }
-@media (max-width: 820px) { .pp-grid { grid-template-columns: 1fr; } }
-.visually-hidden { position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden; }
-</style>
-
 <script>
-(() => {
-  const money = (cents) => (cents/100).toLocaleString(undefined, { style: 'currency', currency: {{ shop.currency | json }} });
-
-  const popup = document.getElementById('ProductPopup');
-  const imgEl = popup.querySelector('.pp-image');
-  const titleEl = popup.querySelector('.pp-title');
-  const priceEl = popup.querySelector('.pp-price');
-  const descEl = popup.querySelector('.pp-desc');
-  const variantSelect = popup.querySelector('.pp-variant');
-  const form = popup.querySelector('.pp-form');
-
-  // Delegated click for any Quick View button on the page
-  document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.quick-view-btn');
-    if (!btn) return;
-
-    const handle = btn.dataset.handle;
-    if (!handle) return;
-
-    // Load product JSON
-    const res = await fetch(`/products/${handle}.js`);
-    if (!res.ok) return;
-    const prod = await res.json();
-
-    // Fill UI
-    titleEl.textContent = prod.title || '';
-    priceEl.textContent = money(prod.price || prod.variants?.[0]?.price || 0);
-    descEl.textContent = (prod.description || '').replace(/(<([^>]+)>)/gi, '').slice(0, 500);
-
-    // Image
-    imgEl.src = prod.featured_image || '';
-    imgEl.alt = prod.title || '';
-
-    // Variants
-    variantSelect.innerHTML = '';
-    (prod.variants || []).forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.id;
-      opt.textContent = `${v.title} — ${money(v.price)}`;
-      variantSelect.appendChild(opt);
+document.addEventListener("DOMContentLoaded", () => {
+  const addToCartBtn = document.querySelector(".popup-add-to-cart");
+  addToCartBtn.addEventListener("click", () => {
+    const popup = document.getElementById("product-popup");
+    const variantId = popup.querySelector(".popup-variants").value;
+    fetch("/cart/add.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id: variantId, quantity: 1 })
+    })
+    .then(res => res.json())
+    .then(() => {
+      alert("Product added to cart!");
+      popup.style.display = "none";
     });
-
-    // Show popup
-    popup.classList.remove('hidden');
   });
-
-  // Close handlers
-  popup.addEventListener('click', (e) => {
-    if (e.target.hasAttribute('data-close')) {
-      popup.classList.add('hidden');
-    }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') popup.classList.add('hidden');
-  });
-
-  // Add to cart (+ special jacket rule)
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const variantId = variantSelect.value;
-
-    // Add chosen product
-    await fetch('{{ routes.cart_add_url }}.js', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] })
-    });
-
-    // If selected text includes Black & Medium → add Soft Winter Jacket
-    const selectedText = variantSelect.selectedOptions[0]?.textContent || '';
-    if (selectedText.includes('Black') && selectedText.includes('Medium')) {
-      const jacketHandle = 'soft-winter-jacket'; // <-- change if your handle is different
-      try {
-        const jr = await fetch(`/products/${jacketHandle}.js`);
-        if (jr.ok) {
-          const jacket = await jr.json();
-          const jacketVariantId = jacket?.variants?.[0]?.id;
-          if (jacketVariantId) {
-            await fetch('{{ routes.cart_add_url }}.js', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ items: [{ id: jacketVariantId, quantity: 1 }] })
-            });
-          }
-        }
-      } catch(err) { /* ignore */ }
-    }
-
-    // Go to cart
-    window.location.href = '/cart';
-  });
-})();
+});
 </script>
