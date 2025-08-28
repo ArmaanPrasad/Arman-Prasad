@@ -1,7 +1,56 @@
+<div class="custom-grid">
+  {% for block in section.blocks %}
+    {% if block.settings.product != blank %}
+      {% assign product = all_products[block.settings.product] %}
+      <div class="grid-item">
+        <img 
+          src="{{ product.featured_image | image_url: width: 400 }}" 
+          alt="{{ product.title }}" 
+          width="400" height="400">
+        <h3>{{ product.title }}</h3>
+        <p>{{ product.price | money }}</p>
+        <button class="quick-view-btn" data-handle="{{ product.handle }}">Quick View</button>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% render 'product-popup' %}
+
+<style>
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 24px;
+}
+.grid-item {
+  border: 1px solid #eee;
+  padding: 16px;
+  text-align: center;
+  border-radius: 8px;
+  background: #fafafa;
+}
+.grid-item img { width:100%; border-radius:8px; margin-bottom:12px; }
+.grid-item h3 { font-size: 18px; margin-bottom: 8px; }
+.grid-item p { font-weight: 600; color: #333; }
+.quick-view-btn {
+  padding: 8px 16px;
+  border: none;
+  background: black;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.quick-view-btn:hover { background: #333; }
+@media(max-width:768px){
+  .custom-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
 {% schema %}
 {
-  "name": "Custom Product Grid",
-  "settings": [],
+  "name": "Custom Grid",
+  "max_blocks": 6,
   "blocks": [
     {
       "type": "product",
@@ -15,87 +64,18 @@
       ]
     }
   ],
-  "max_blocks": 6,
   "presets": [
     {
-      "name": "Custom Product Grid"
+      "name": "Custom Grid",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
     }
   ]
 }
 {% endschema %}
-
-<div class="custom-grid">
-  {% for block in section.blocks %}
-    {% assign product = all_products[block.settings.product] %}
-    {% if product %}
-      <div class="grid-item">
-        <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
-        <h3>{{ product.title }}</h3>
-        <p>{{ product.price | money }}</p>
-        <button class="quick-view-btn" data-handle="{{ product.handle }}">Quick View</button>
-      </div>
-    {% endif %}
-  {% endfor %}
-</div>
-
-<div id="popup-container" class="popup-container" style="display:none;">
-  <div class="popup-content"></div>
-</div>
-
-<style>
-.custom-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.grid-item {
-  text-align: center;
-}
-.popup-container {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.popup-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 800px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-@media (max-width: 768px) {
-  .custom-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-</style>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".quick-view-btn");
-  const popup = document.getElementById("popup-container");
-  const content = popup.querySelector(".popup-content");
-
-  buttons.forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const handle = btn.dataset.handle;
-      const res = await fetch(`/products/${handle}?view=productpopup`);
-      const html = await res.text();
-      content.innerHTML = html;
-      popup.style.display = "flex";
-    });
-  });
-
-  popup.addEventListener("click", (e) => {
-    if (e.target === popup) {
-      popup.style.display = "none";
-      content.innerHTML = "";
-    }
-  });
-});
-</script>
