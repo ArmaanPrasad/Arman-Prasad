@@ -2,39 +2,48 @@
   <div class="product-popup-overlay"></div>
   <div class="product-popup-box">
     <button class="popup-close">&times;</button>
-    <div class="product-popup-content"><!-- Product info injected dynamically --></div>
+    <div class="product-popup-content">
+      <!-- Product info injected here -->
+    </div>
   </div>
 </div>
 
 <style>
-.product-popup {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  display: none; align-items: center; justify-content: center;
-  z-index: 9999;
+.product-popup { 
+  position: fixed; inset: 0; display: none; 
+  align-items: center; justify-content: center; z-index: 9999; 
 }
 .product-popup.active { display: flex; }
-.product-popup-overlay {
-  position: absolute; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
+.product-popup-overlay { 
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5); 
 }
 .product-popup-box {
   position: relative; background: #fff; padding: 20px;
-  max-width: 500px; width: 100%;
-  border-radius: 8px; z-index: 10000;
+  max-width: 500px; width: 100%; border-radius: 12px; z-index: 10000;
 }
 .popup-close {
-  position: absolute; top: 10px; right: 10px;
+  position: absolute; top: 12px; right: 15px;
   background: none; border: none; font-size: 22px; cursor: pointer;
 }
-.product-popup-content img { width: 100%; margin-bottom: 15px; border-radius: 6px; }
-.product-popup-content h2 { font-size: 20px; margin-bottom: 8px; }
-.product-popup-content .price { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
-.product-popup-content .description { font-size: 14px; color: #555; margin-bottom: 12px; }
-.product-popup-content select { width: 100%; padding: 8px; margin-bottom: 12px; }
+.product-popup-content img {
+  width: 100%; border-radius: 8px; margin-bottom: 15px;
+}
+.product-popup-content h2 { font-size: 22px; margin-bottom: 6px; }
+.product-popup-content .price { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+.product-popup-content .description { font-size: 14px; color: #444; margin-bottom: 16px; }
+.variant-group { margin-bottom: 16px; }
+.variant-group label { display: block; font-weight: 600; margin-bottom: 6px; }
+.variant-colors { display: flex; gap: 10px; }
+.variant-colors button {
+  padding: 8px 16px; border: 1px solid #ccc; cursor: pointer;
+  border-radius: 6px; background: #fff;
+}
+.variant-colors button.active { border: 2px solid black; }
+.variant-dropdown { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
 .popup-add-to-cart {
-  background: black; color: white;
-  width: 100%; padding: 12px;
-  border: none; cursor: pointer; border-radius: 4px;
+  display: block; width: 100%; padding: 14px;
+  background: black; color: white; font-size: 16px; 
+  border: none; cursor: pointer; border-radius: 8px; 
 }
 .popup-add-to-cart:hover { background: #333; }
 </style>
@@ -45,51 +54,90 @@ document.addEventListener("DOMContentLoaded", () => {
   const popupContent = popup.querySelector(".product-popup-content");
   const closeBtn = popup.querySelector(".popup-close");
 
-  // open quick view
+  // open popup
   document.querySelectorAll(".quick-view-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const handle = btn.getAttribute("data-handle");
-
       fetch(`/products/${handle}.js`)
         .then(res => res.json())
         .then(product => {
-          // build popup HTML dynamically
+          // Build product HTML
+          let colorOptions = "";
+          let sizeOptions = "";
+          product.options.forEach((opt, i) => {
+            if (opt.name.toLowerCase() === "color") {
+              colorOptions = `
+                <div class="variant-group">
+                  <label>${opt.name}</label>
+                  <div class="variant-colors">
+                    ${opt.values.map(val => 
+                      `<button type="button" class="color-btn" data-value="${val}">${val}</button>`
+                    ).join("")}
+                  </div>
+                </div>`;
+            } else {
+              sizeOptions = `
+                <div class="variant-group">
+                  <label>${opt.name}</label>
+                  <select class="variant-dropdown" data-option="${opt.name}">
+                    ${opt.values.map(val => `<option value="${val}">${val}</option>`).join("")}
+                  </select>
+                </div>`;
+            }
+          });
+
           popupContent.innerHTML = `
             <img src="${product.images[0]}" alt="${product.title}">
             <h2>${product.title}</h2>
-            <p class="price">₹${(product.price / 100).toFixed(2)}</p>
+            <p class="price">₹${(product.price/100).toFixed(2)}</p>
             <p class="description">${product.description}</p>
             <form class="popup-cart-form">
-              <select class="popup-variants" name="id">
-                ${product.variants.map(v =>
-                  `<option value="${v.id}" data-options="${v.title}">
-                    ${v.title} - ₹${(v.price / 100).toFixed(2)}
-                  </option>`
-                ).join("")}
-              </select>
-              <button type="submit" class="popup-add-to-cart">Add to Cart</button>
+              ${colorOptions}
+              ${sizeOptions}
+              <button type="submit" class="popup-add-to-cart">ADD TO CART →</button>
             </form>
           `;
 
-          // handle add to cart
+          // color button logic
+          let selectedColor = null;
+          popupContent.querySelectorAll(".color-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+              popupContent.querySelectorAll(".color-btn").forEach(b => b.classList.remove("active"));
+              btn.classList.add("active");
+              selectedColor = btn.dataset.value;
+            });
+          });
+
+          // Add to cart
           const form = popupContent.querySelector(".popup-cart-form");
           form.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const variantSelect = form.querySelector(".popup-variants");
-            const variantId = variantSelect.value;
-            const variantOptions = variantSelect.selectedOptions[0].dataset.options;
+
+            const sizeSelect = form.querySelector(".variant-dropdown");
+            const selectedSize = sizeSelect ? sizeSelect.value : null;
+
+            // find correct variant
+            const chosenVariant = product.variants.find(v => {
+              return (!selectedColor || v.title.includes(selectedColor)) &&
+                     (!selectedSize || v.title.includes(selectedSize));
+            });
+
+            if (!chosenVariant) {
+              alert("Please select all options.");
+              return;
+            }
 
             try {
-              // add main product
+              // add chosen product
               await fetch("/cart/add.js", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: variantId, quantity: 1 })
+                body: JSON.stringify({ id: chosenVariant.id, quantity: 1 })
               });
 
-              // if Black + Medium, add Soft Winter Jacket
-              if (variantOptions.includes("Black") && variantOptions.includes("Medium")) {
-                const jacketHandle = "soft-winter-jacket"; // 🔥 replace with exact handle
+              // condition: if Black + Medium → auto add Soft Winter Jacket
+              if (chosenVariant.title.includes("Black") && chosenVariant.title.includes("Medium")) {
+                const jacketHandle = "soft-winter-jacket"; // replace with your handle
                 const res = await fetch(`/products/${jacketHandle}.js`);
                 const jacket = await res.json();
                 const jacketVariantId = jacket.variants[0].id;
@@ -104,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
               alert("Added to cart successfully!");
             } catch (err) {
               console.error(err);
-              alert("Something went wrong. Try again!");
+              alert("Something went wrong!");
             }
           });
 
@@ -113,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // close popup
+  // close
   closeBtn.addEventListener("click", () => popup.classList.remove("active"));
   popup.querySelector(".product-popup-overlay").addEventListener("click", () => popup.classList.remove("active"));
 });
