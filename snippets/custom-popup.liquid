@@ -1,66 +1,129 @@
-<div id="product-popup" class="popup-overlay">
+<div id="ProductPopup" class="product-popup hidden">
+  <div class="popup-overlay"></div>
   <div class="popup-content">
-    <span class="popup-close">&times;</span>
-    <div id="popup-body">
-      <!-- Product details will load here -->
+    <button class="popup-close" aria-label="Close">&times;</button>
+
+    <div class="popup-inner">
+      <div class="popup-left">
+        {% if product.featured_image %}
+          <img 
+            src="{{ product.featured_image | image_url: width: 600 }}"
+            alt="{{ product.title | escape }}"
+            width="600" height="600"
+            class="popup-product-image">
+        {% endif %}
+      </div>
+
+      <div class="popup-right">
+        <h2 class="popup-product-title">{{ product.title }}</h2>
+        <p class="popup-product-price">{{ product.price | money }}</p>
+
+        {% if product.description != blank %}
+          <div class="popup-product-description">
+            {{ product.description | strip_html | truncate: 250 }}
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ routes.cart_add_url }}" class="popup-add-to-cart">
+          <select name="id" class="variant-select">
+            {% for variant in product.variants %}
+              <option value="{{ variant.id }}">
+                {{ variant.title }} — {{ variant.price | money }}
+              </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="popup-add-btn">Add to Cart</button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
 
 <style>
+.product-popup.hidden { display: none; }
+.product-popup { 
+  position: fixed; inset: 0; z-index: 9999; 
+  display: flex; align-items: center; justify-content: center; 
+}
 .popup-overlay {
-  display: none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
 }
 .popup-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 80%;
-  max-width: 600px;
   position: relative;
+  background: white; border-radius: 12px; padding: 24px;
+  max-width: 900px; width: 95%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
 }
 .popup-close {
-  position: absolute;
-  top: 10px; right: 20px;
-  font-size: 24px;
-  cursor: pointer;
+  position: absolute; top: 12px; right: 16px; 
+  background: none; border: none; font-size: 32px; cursor: pointer;
+}
+.popup-left img { width: 100%; border-radius: 8px; }
+.popup-right { display: flex; flex-direction: column; gap: 16px; }
+.popup-product-title { font-size: 26px; font-weight: 700; }
+.popup-product-price { font-size: 20px; color: #e63946; font-weight: 600; }
+.popup-add-btn {
+  padding: 12px 24px; background: black; color: white;
+  border: none; border-radius: 6px; cursor: pointer;
+}
+.popup-add-btn:hover { background: #333; }
+@media(max-width:768px){
+  .popup-content { grid-template-columns: 1fr; }
 }
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const popup = document.getElementById("product-popup");
-  const popupBody = document.getElementById("popup-body");
-  const closeBtn = document.querySelector(".popup-close");
+document.addEventListener("DOMContentLoaded", () => {
+  const popup = document.getElementById("ProductPopup");
+  const overlay = popup.querySelector(".popup-overlay");
+  const closeBtn = popup.querySelector(".popup-close");
 
-  document.querySelectorAll(".product-link").forEach(link => {
-    link.addEventListener("click", function() {
-      const handle = this.getAttribute("data-handle");
+  document.querySelectorAll(".quick-view-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const handle = btn.dataset.handle;
+      fetch(`/products/${handle}.js`)
+        .then(res => res.json())
+        .then(product => {
+          popup.querySelector(".popup-product-title").innerText = product.title;
+          popup.querySelector(".popup-product-price").innerText = 
+            (product.price/100).toLocaleString("en-US",{style:"currency",currency:"USD"});
+          popup.querySelector(".popup-product-description").innerText = product.description;
+          popup.querySelector(".popup-product-image").src = product.featured_image;
 
-      fetch(`/products/${handle}?view=popup`)
-        .then(res => res.text())
-        .then(html => {
-          popupBody.innerHTML = html;
-          popup.style.display = "flex";
+          const variantSelect = popup.querySelector(".variant-select");
+          variantSelect.innerHTML = "";
+          product.variants.forEach(v=>{
+            let opt = document.createElement("option");
+            opt.value = v.id;
+            opt.textContent = `${v.title} — ${(v.price/100).toLocaleString("en-US",{style:"currency",currency:"USD"})}`;
+            variantSelect.appendChild(opt);
+          });
+
+          popup.classList.remove("hidden");
         });
     });
   });
 
-  closeBtn.addEventListener("click", function() {
-    popup.style.display = "none";
-  });
+  overlay.addEventListener("click", ()=>popup.classList.add("hidden"));
+  closeBtn.addEventListener("click", ()=>popup.classList.add("hidden"));
 
-  window.addEventListener("click", function(e) {
-    if (e.target === popup) {
-      popup.style.display = "none";
-    }
+  // Special logic: auto add Soft Winter Jacket if Black + Medium chosen
+  popup.querySelector(".popup-add-to-cart").addEventListener("submit", function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch(this.action, { method:"POST", body: formData })
+      .then(()=> {
+        const selectedVariant = popup.querySelector(".variant-select").selectedOptions[0].textContent;
+        if(selectedVariant.includes("Black") && selectedVariant.includes("Medium")){
+          fetch("/cart/add.js", {
+            method:"POST",
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ items:[{id: window.softWinterVariantId, quantity:1}] })
+          });
+        }
+        window.location.href = "/cart";
+      });
   });
 });
 </script>
