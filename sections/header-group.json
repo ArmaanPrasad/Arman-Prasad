@@ -58,8 +58,8 @@
       "type": "custom-banner",
       "name": "Custom Banner",
       "settings": {
-        "banner_heading": "Your Banner Heading",
-        "banner_subheading": "Your Banner Subheading",
+        "banner_heading": "The Gift Guide",
+        "banner_subheading": "Crafted with passion, worn with pride",
         "banner_button_label": "Shop Now",
         "banner_button_link": "shopify://collections/all"
       }
