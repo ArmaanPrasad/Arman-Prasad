@@ -4,7 +4,7 @@
     {% if product %}
       <div class="custom-grid-item">
         <div class="image-wrapper">
-          <img src="{{ product.featured_image | img_url: '400x400' }}" alt="{{ product.title }}" class="product-image">
+          <img src="{{ product.featured_image | image_url: '400x400' }}" alt="{{ product.title }}" class="product-image">
         </div>
 
         <h3 class="product-title">{{ product.title }}</h3>
