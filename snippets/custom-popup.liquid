@@ -1,38 +1,29 @@
-<div id="ProductPopup" class="product-popup hidden">
-  <div class="popup-overlay"></div>
-  <div class="popup-content">
-    <button class="popup-close" aria-label="Close">&times;</button>
+<div id="ProductPopup" class="pp hidden" role="dialog" aria-modal="true" aria-label="Quick view dialog">
+  <div class="pp-overlay" data-close></div>
+  <div class="pp-box" role="document">
+    <button class="pp-close" aria-label="Close" data-close>&times;</button>
 
-    <div class="popup-inner">
-      <div class="popup-left">
-        {% if product.featured_image %}
-          <img 
-            src="{{ product.featured_image | image_url: width: 600 }}"
-            alt="{{ product.title | escape }}"
-            width="600" height="600"
-            class="popup-product-image">
-        {% endif %}
+    <div class="pp-grid">
+      <div class="pp-left">
+        <img
+          class="pp-image"
+          src=""
+          alt=""
+          width="600"
+          height="600"
+          loading="lazy"
+          style="background:#f6f6f6;border-radius:8px;" />
       </div>
 
-      <div class="popup-right">
-        <h2 class="popup-product-title">{{ product.title }}</h2>
-        <p class="popup-product-price">{{ product.price | money }}</p>
+      <div class="pp-right">
+        <h2 class="pp-title"></h2>
+        <p class="pp-price"></p>
+        <div class="pp-desc"></div>
 
-        {% if product.description != blank %}
-          <div class="popup-product-description">
-            {{ product.description | strip_html | truncate: 250 }}
-          </div>
-        {% endif %}
-
-        <form method="post" action="{{ routes.cart_add_url }}" class="popup-add-to-cart">
-          <select name="id" class="variant-select">
-            {% for variant in product.variants %}
-              <option value="{{ variant.id }}">
-                {{ variant.title }} — {{ variant.price | money }}
-              </option>
-            {% endfor %}
-          </select>
-          <button type="submit" class="popup-add-btn">Add to Cart</button>
+        <form class="pp-form" method="post" action="{{ routes.cart_add_url }}">
+          <label for="pp-variant" class="visually-hidden">Variant</label>
+          <select name="id" id="pp-variant" class="pp-variant"></select>
+          <button type="submit" class="pp-add">Add to Cart</button>
         </form>
       </div>
     </div>
@@ -40,90 +31,116 @@
 </div>
 
 <style>
-.product-popup.hidden { display: none; }
-.product-popup { 
-  position: fixed; inset: 0; z-index: 9999; 
-  display: flex; align-items: center; justify-content: center; 
+.pp.hidden { display: none; }
+.pp { position: fixed; inset: 0; z-index: 9999; display:flex; align-items:center; justify-content:center; }
+.pp-overlay { position:absolute; inset:0; background:rgba(0,0,0,.5); }
+.pp-box {
+  position: relative; background:#fff; border-radius:12px; padding:24px;
+  width: min(920px, 94vw);
 }
-.popup-overlay {
-  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
-}
-.popup-content {
-  position: relative;
-  background: white; border-radius: 12px; padding: 24px;
-  max-width: 900px; width: 95%;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
-}
-.popup-close {
-  position: absolute; top: 12px; right: 16px; 
-  background: none; border: none; font-size: 32px; cursor: pointer;
-}
-.popup-left img { width: 100%; border-radius: 8px; }
-.popup-right { display: flex; flex-direction: column; gap: 16px; }
-.popup-product-title { font-size: 26px; font-weight: 700; }
-.popup-product-price { font-size: 20px; color: #e63946; font-weight: 600; }
-.popup-add-btn {
-  padding: 12px 24px; background: black; color: white;
-  border: none; border-radius: 6px; cursor: pointer;
-}
-.popup-add-btn:hover { background: #333; }
-@media(max-width:768px){
-  .popup-content { grid-template-columns: 1fr; }
-}
+.pp-close { position:absolute; top:10px; right:14px; border:none; background:none; font-size:32px; cursor:pointer; }
+.pp-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.pp-title { font-size:26px; font-weight:700; margin:0; }
+.pp-price { font-size:20px; font-weight:600; color:#e63946; margin:6px 0 12px; }
+.pp-desc { color:#555; font-size:14px; line-height:1.5; max-height: 180px; overflow:auto; }
+.pp-variant { width:100%; padding:10px; border-radius:6px; border:1px solid #ddd; margin: 8px 0 12px; }
+.pp-add { padding:12px 18px; border:none; border-radius:6px; background:#000; color:#fff; cursor:pointer; }
+.pp-add:hover { background:#333; }
+@media (max-width: 820px) { .pp-grid { grid-template-columns: 1fr; } }
+.visually-hidden { position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden; }
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const popup = document.getElementById("ProductPopup");
-  const overlay = popup.querySelector(".popup-overlay");
-  const closeBtn = popup.querySelector(".popup-close");
+(() => {
+  const money = (cents) => (cents/100).toLocaleString(undefined, { style: 'currency', currency: {{ shop.currency | json }} });
 
-  document.querySelectorAll(".quick-view-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const handle = btn.dataset.handle;
-      fetch(`/products/${handle}.js`)
-        .then(res => res.json())
-        .then(product => {
-          popup.querySelector(".popup-product-title").innerText = product.title;
-          popup.querySelector(".popup-product-price").innerText = 
-            (product.price/100).toLocaleString("en-US",{style:"currency",currency:"USD"});
-          popup.querySelector(".popup-product-description").innerText = product.description;
-          popup.querySelector(".popup-product-image").src = product.featured_image;
+  const popup = document.getElementById('ProductPopup');
+  const imgEl = popup.querySelector('.pp-image');
+  const titleEl = popup.querySelector('.pp-title');
+  const priceEl = popup.querySelector('.pp-price');
+  const descEl = popup.querySelector('.pp-desc');
+  const variantSelect = popup.querySelector('.pp-variant');
+  const form = popup.querySelector('.pp-form');
 
-          const variantSelect = popup.querySelector(".variant-select");
-          variantSelect.innerHTML = "";
-          product.variants.forEach(v=>{
-            let opt = document.createElement("option");
-            opt.value = v.id;
-            opt.textContent = `${v.title} — ${(v.price/100).toLocaleString("en-US",{style:"currency",currency:"USD"})}`;
-            variantSelect.appendChild(opt);
-          });
+  // Delegated click for any Quick View button on the page
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.quick-view-btn');
+    if (!btn) return;
 
-          popup.classList.remove("hidden");
-        });
+    const handle = btn.dataset.handle;
+    if (!handle) return;
+
+    // Load product JSON
+    const res = await fetch(`/products/${handle}.js`);
+    if (!res.ok) return;
+    const prod = await res.json();
+
+    // Fill UI
+    titleEl.textContent = prod.title || '';
+    priceEl.textContent = money(prod.price || prod.variants?.[0]?.price || 0);
+    descEl.textContent = (prod.description || '').replace(/(<([^>]+)>)/gi, '').slice(0, 500);
+
+    // Image
+    imgEl.src = prod.featured_image || '';
+    imgEl.alt = prod.title || '';
+
+    // Variants
+    variantSelect.innerHTML = '';
+    (prod.variants || []).forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = `${v.title} — ${money(v.price)}`;
+      variantSelect.appendChild(opt);
     });
+
+    // Show popup
+    popup.classList.remove('hidden');
   });
 
-  overlay.addEventListener("click", ()=>popup.classList.add("hidden"));
-  closeBtn.addEventListener("click", ()=>popup.classList.add("hidden"));
+  // Close handlers
+  popup.addEventListener('click', (e) => {
+    if (e.target.hasAttribute('data-close')) {
+      popup.classList.add('hidden');
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') popup.classList.add('hidden');
+  });
 
-  // Special logic: auto add Soft Winter Jacket if Black + Medium chosen
-  popup.querySelector(".popup-add-to-cart").addEventListener("submit", function(e){
+  // Add to cart (+ special jacket rule)
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(this);
+    const variantId = variantSelect.value;
 
-    fetch(this.action, { method:"POST", body: formData })
-      .then(()=> {
-        const selectedVariant = popup.querySelector(".variant-select").selectedOptions[0].textContent;
-        if(selectedVariant.includes("Black") && selectedVariant.includes("Medium")){
-          fetch("/cart/add.js", {
-            method:"POST",
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ items:[{id: window.softWinterVariantId, quantity:1}] })
-          });
+    // Add chosen product
+    await fetch('{{ routes.cart_add_url }}.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] })
+    });
+
+    // If selected text includes Black & Medium → add Soft Winter Jacket
+    const selectedText = variantSelect.selectedOptions[0]?.textContent || '';
+    if (selectedText.includes('Black') && selectedText.includes('Medium')) {
+      const jacketHandle = 'soft-winter-jacket'; // <-- change if your handle is different
+      try {
+        const jr = await fetch(`/products/${jacketHandle}.js`);
+        if (jr.ok) {
+          const jacket = await jr.json();
+          const jacketVariantId = jacket?.variants?.[0]?.id;
+          if (jacketVariantId) {
+            await fetch('{{ routes.cart_add_url }}.js', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items: [{ id: jacketVariantId, quantity: 1 }] })
+            });
+          }
         }
-        window.location.href = "/cart";
-      });
+      } catch(err) { /* ignore */ }
+    }
+
+    // Go to cart
+    window.location.href = '/cart';
   });
-});
+})();
 </script>
