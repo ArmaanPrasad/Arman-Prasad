@@ -1,6 +1,58 @@
+<section class="custom-banner">
+  <div class="banner-inner">
+    {% if section.settings.banner_image != blank %}
+      <img 
+        src="{{ section.settings.banner_image | image_url: width: 1600 }}" 
+        alt="{{ section.settings.banner_heading | escape }}" 
+        class="banner-image"
+        width="{{ section.settings.banner_image.width }}"
+        height="{{ section.settings.banner_image.height }}">
+    {% else %}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'banner-placeholder' }}
+    {% endif %}
+
+    <div class="banner-content">
+      {% if section.settings.banner_heading != blank %}
+        <h2 class="banner-heading">{{ section.settings.banner_heading }}</h2>
+      {% endif %}
+      {% if section.settings.banner_subheading != blank %}
+        <p class="banner-subheading">{{ section.settings.banner_subheading }}</p>
+      {% endif %}
+      {% if section.settings.banner_button_label != blank and section.settings.banner_button_link != blank %}
+        <a href="{{ section.settings.banner_button_link }}" class="banner-button">
+          {{ section.settings.banner_button_label }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+.banner-button {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #e63946, #d62828);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 40px;
+  text-decoration: none;
+  transition: all 0.35s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  letter-spacing: 0.5px;
+}
+
+.banner-button:hover {
+  background: linear-gradient(135deg, #d62828, #e63946);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+</style>
+
 {% schema %}
 {
   "name": "Custom Banner",
+  "tag": "section",
+  "class": "section-custom-banner",
   "settings": [
     {
       "type": "image_picker",
@@ -11,24 +63,18 @@
       "type": "text",
       "id": "banner_heading",
       "label": "Heading",
-      "default": "Welcome to Our Store"
+      "default": "Your Banner Heading"
     },
     {
       "type": "text",
       "id": "banner_subheading",
       "label": "Subheading",
-      "default": "Best Products Await You"
-    },
-    {
-      "type": "textarea",
-      "id": "banner_text",
-      "label": "Description",
-      "default": "Shop the latest collections and offers now."
+      "default": "Your Banner Subheading"
     },
     {
       "type": "text",
-      "id": "banner_button_text",
-      "label": "Button Text",
+      "id": "banner_button_label",
+      "label": "Button Label",
       "default": "Shop Now"
     },
     {
@@ -39,76 +85,9 @@
   ],
   "presets": [
     {
-      "name": "Custom Banner"
+      "name": "Custom Banner",
+      "category": "Custom"
     }
   ]
 }
 {% endschema %}
-
-<section class="custom-banner">
-  {% if section.settings.banner_image %}
-    <img 
-      src="{{ section.settings.banner_image | image_url: width: 1600 }}" 
-      alt="{{ section.settings.banner_heading | escape }}"
-      width="1600"
-      height="600"
-      class="banner-image"
-    >
-  {% endif %}
-
-  <div class="banner-content">
-    <h1 class="banner-heading">{{ section.settings.banner_heading }}</h1>
-    <h3 class="banner-subheading">{{ section.settings.banner_subheading }}</h3>
-    <p class="banner-text">{{ section.settings.banner_text }}</p>
-    {% if section.settings.banner_button_text != blank %}
-      <a href="{{ section.settings.banner_button_link }}" class="banner-button">
-        {{ section.settings.banner_button_text }}
-      </a>
-    {% endif %}
-  </div>
-</section>
-
-<style>
-.custom-banner {
-  position: relative;
-  text-align: center;
-  color: white;
-}
-.custom-banner .banner-image {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-.custom-banner .banner-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-.banner-heading {
-  font-size: 3rem;
-  margin-bottom: 10px;
-}
-.banner-subheading {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-}
-.banner-text {
-  font-size: 1rem;
-  margin-bottom: 20px;
-}
-.banner-button {
-  background: #e63946;
-  color: white;
-  padding: 12px 28px;
-  border-radius: 30px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  font-weight: bold;
-}
-.banner-button:hover {
-  background: #d62828;
-  transform: scale(1.05);
-}
-</style>
