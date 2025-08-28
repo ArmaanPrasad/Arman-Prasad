@@ -1,14 +1,17 @@
 {% schema %}
 {
   "name": "Custom Grid",
-  "settings": {},
   "blocks": [
     {
       "type": "product",
       "name": "Product",
-      "settings": {
-        "product": "product"
-      }
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Select product"
+        }
+      ]
     }
   ],
   "max_blocks": 6,
@@ -56,6 +59,21 @@
   {% endfor %}
 </div>
 
+<!-- Product Popup -->
+<div id="product-popup" class="popup-overlay" style="display:none;">
+  <div class="popup-content">
+    <button class="popup-close">&times;</button>
+    <h2 class="popup-title"></h2>
+    <p class="popup-price"></p>
+    <div class="popup-description"></div>
+    <select class="popup-variants"></select>
+    <form method="post" action="/cart/add" class="popup-cart-form">
+      <input type="hidden" name="id" class="popup-variant-id">
+      <button type="submit" class="popup-add-to-cart">Add to Cart</button>
+    </form>
+  </div>
+</div>
+
 <style>
 .custom-grid {
   display: grid;
@@ -73,8 +91,8 @@
 }
 .custom-grid-item img {
   width: 100%;
-  height: 250px; /* fixed height */
-  object-fit: contain; /* prevent stretching */
+  height: 250px;
+  object-fit: contain;
   margin-bottom: 10px;
 }
 .product-title {
@@ -86,51 +104,84 @@
   color: #555;
   margin-bottom: 15px;
 }
-.quick-view-btn {
-  background: black;
-  color: white;
+.quick-view-btn,
+.add-to-cart-btn {
+  display: block;
+  width: 100%;
   padding: 10px 15px;
   border: none;
   border-radius: 4px;
+  margin-bottom: 8px;
   cursor: pointer;
-  margin-bottom: 10px;
-  width: 100%;
 }
-.quick-view-btn:hover {
-  background: #333;
+.quick-view-btn {
+  background: black;
+  color: white;
 }
+.quick-view-btn:hover { background: #333; }
 .add-to-cart-btn {
   background: #007aff;
   color: #fff;
-  padding: 12px 15px;
+}
+.add-to-cart-btn:hover { background: #005bb5; }
+
+/* Popup styling */
+.popup-overlay {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+  position: relative;
+}
+.popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+.popup-add-to-cart {
+  margin-top: 10px;
+  background: black;
+  color: white;
+  padding: 10px;
+  width: 100%;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
-  width: 100%;
-}
-.add-to-cart-btn:hover {
-  background: #005bb5;
 }
 </style>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll(".quick-view-btn");
+  const popup = document.getElementById("product-popup");
+  const closeBtn = popup.querySelector(".popup-close");
+  const variantSelect = popup.querySelector(".popup-variants");
+  const variantInput = popup.querySelector(".popup-variant-id");
+
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       const handle = btn.getAttribute("data-handle");
       fetch(`/products/${handle}.js`)
         .then(res => res.json())
         .then(product => {
-          const popup = document.getElementById("product-popup");
-          if (!popup) return;
           popup.querySelector(".popup-title").innerText = product.title;
           popup.querySelector(".popup-price").innerText = 
             (product.price / 100).toFixed(2);
           popup.querySelector(".popup-description").innerHTML = product.description;
 
-          // populate variants
-          const variantSelect = popup.querySelector(".popup-variants");
           variantSelect.innerHTML = "";
           product.variants.forEach(variant => {
             const opt = document.createElement("option");
@@ -140,9 +191,18 @@ document.addEventListener("DOMContentLoaded", () => {
             variantSelect.appendChild(opt);
           });
 
+          variantInput.value = product.variants[0].id;
+          variantSelect.addEventListener("change", e => {
+            variantInput.value = e.target.value;
+          });
+
           popup.style.display = "flex";
         });
     });
+  });
+
+  closeBtn.addEventListener("click", () => {
+    popup.style.display = "none";
   });
 });
 </script>
