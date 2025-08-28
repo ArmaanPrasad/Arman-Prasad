@@ -1,65 +1,83 @@
-{{ 'custom-grid.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'custom-grid.js' | asset_url }}" defer="defer"></script>
-
 <section class="custom-grid">
-  <div class="grid-inner">
-    {% for block in section.blocks %}
-      {% assign product = block.settings.product %}
-      {% if product != blank %}
-        <div class="grid-item" data-handle="{{ product.handle }}">
-          {% if product.featured_image %}
-            <img 
-              src="{{ product.featured_image | img_url: '500x' }}" 
-              alt="{{ product.title | escape }}" 
-              width="{{ product.featured_image.width }}" 
-              height="{{ product.featured_image.height }}">
-          {% else %}
-            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
-          {% endif %}
-          <h3>{{ product.title }}</h3>
-          <p>{{ product.price | money }}</p>
-          <button class="quick-view-btn" data-handle="{{ product.handle }}">Quick View</button>
+  <div class="custom-grid-inner">
+    {% if section.settings.collection != blank %}
+      {% assign grid_collection = collections[section.settings.collection] %}
+      {% if grid_collection.products_count > 0 %}
+        <div class="product-grid">
+          {% for product in grid_collection.products %}
+            <div class="product-item">
+              <a href="{{ product.url }}">
+                {% if product.featured_image %}
+                  <img src="{{ product.featured_image | image_url: '400x' }}" alt="{{ product.title | escape }}">
+                {% else %}
+                  {{ 'product-1' | placeholder_svg_tag: 'product-placeholder' }}
+                {% endif %}
+                <h3>{{ product.title }}</h3>
+                <p>{{ product.price | money }}</p>
+              </a>
+            </div>
+          {% endfor %}
         </div>
+      {% else %}
+        <p>No products found in this collection.</p>
       {% endif %}
-    {% endfor %}
+    {% else %}
+      <p>Please select a collection in the section settings.</p>
+    {% endif %}
   </div>
-
-  <!-- Instead of inline popup, render the snippet -->
-  {% render 'custom-popup' %}
 </section>
+
+<style>
+.custom-grid {
+  padding: 60px 20px;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 30px;
+}
+
+.product-item {
+  text-align: center;
+}
+
+.product-item img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.product-item img:hover {
+  transform: scale(1.05);
+}
+
+.product-item h3 {
+  font-size: 1.1rem;
+  margin: 10px 0 5px;
+}
+
+.product-item p {
+  font-weight: 600;
+  color: #333;
+}
+</style>
 
 {% schema %}
 {
   "name": "Custom Product Grid",
-  "tag": "section",
-  "class": "section-custom-grid",
-  "settings": [],
-  "max_blocks": 6,
-  "blocks": [
+  "settings": [
     {
-      "type": "product",
-      "name": "Product",
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Select Product"
-        }
-      ]
+      "type": "collection",
+      "id": "collection",
+      "label": "Select Collection"
     }
   ],
   "presets": [
     {
       "name": "Custom Product Grid",
-      "category": "Custom",
-      "blocks": [
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" }
-      ]
+      "category": "Custom"
     }
   ]
 }
