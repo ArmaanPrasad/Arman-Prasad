@@ -1,0 +1,83 @@
+{% comment %}
+  Product Popup Snippet
+  Place this file in: snippets/product-popup.liquid
+  Render with: {% render 'product-popup', product: product %}
+{% endcomment %}
+
+<div class="popup-product">
+  <div class="popup-left">
+    {% if product.featured_image %}
+      <img 
+        src="{{ product.featured_image | image_url: '600x' }}" 
+        alt="{{ product.title | escape }}"
+        width="{{ product.featured_image.width }}"
+        height="{{ product.featured_image.height }}"
+        class="popup-product-image">
+    {% endif %}
+  </div>
+
+  <div class="popup-right">
+    <h2 class="popup-product-title">{{ product.title }}</h2>
+    <p class="popup-product-price">{{ product.price | money }}</p>
+
+    {% if product.description != blank %}
+      <div class="popup-product-description">
+        {{ product.description | strip_html | truncate: 300 }}
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ routes.cart_add_url }}" class="popup-add-to-cart">
+      <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+      <button type="submit" class="popup-add-btn">Add to Cart</button>
+    </form>
+  </div>
+</div>
+
+<style>
+.popup-product {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+.popup-left img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.popup-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.popup-product-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+.popup-product-price {
+  font-size: 20px;
+  font-weight: 600;
+  color: #e63946;
+}
+.popup-product-description {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+.popup-add-btn {
+  padding: 12px 24px;
+  background: black;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.popup-add-btn:hover {
+  background: #333;
+}
+</style>
