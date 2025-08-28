@@ -24,12 +24,8 @@
     {% endfor %}
   </div>
 
-  <div class="popup-overlay hidden" id="quickViewPopup">
-    <div class="popup-content">
-      <span class="popup-close" role="button" aria-label="Close popup">&times;</span>
-      <div id="popupDetails"></div>
-    </div>
-  </div>
+  <!-- Instead of inline popup, render the snippet -->
+  {% render 'custom-popup' %}
 </section>
 
 {% schema %}
