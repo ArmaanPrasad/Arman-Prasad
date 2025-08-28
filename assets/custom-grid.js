@@ -1,65 +1,75 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".quick-view-btn");
+  const popup = document.getElementById("product-popup");
+  const popupDetails = document.getElementById("popup-details");
+  const closeBtn = document.querySelector(".popup-close");
 
-  buttons.forEach(btn => {
+  // Handle Quick View
+  document.querySelectorAll(".quick-view-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const handle = btn.dataset.handle;
 
-      // Fetch product info from Shopify
-      const res = await fetch(`/products/${handle}.js`);
-      const product = await res.json();
+      try {
+        const res = await fetch(`/products/${handle}.js`);
+        const product = await res.json();
 
-      // Build popup HTML
-      const popup = document.createElement("div");
-      popup.classList.add("popup");
-      popup.innerHTML = `
-        <div class="popup-content">
-          <span class="popup-close">&times;</span>
-          <h2>${product.title}</h2>
-          <p>${(product.price / 100).toFixed(2)} ${Shopify.currency.active}</p>
-          <p>${product.description}</p>
-          <form id="add-to-cart-form">
-            <select name="id">
-              ${product.variants.map(v => `
-                <option value="${v.id}">${v.title} - ${(v.price / 100).toFixed(2)} ${Shopify.currency.active}</option>
-              `).join("")}
-            </select>
-            <button type="submit">Add to Cart</button>
-          </form>
-        </div>
-      `;
-      document.body.appendChild(popup);
-
-      // Close popup
-      popup.querySelector(".popup-close").addEventListener("click", () => popup.remove());
-
-      // Add to cart handler
-      popup.querySelector("#add-to-cart-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const variantId = e.target.querySelector("select").value;
-
-        // Add selected product
-        await fetch("/cart/add.js", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: variantId, quantity: 1 })
+        let variantsHtml = "";
+        product.variants.forEach(variant => {
+          variantsHtml += `
+            <option value="${variant.id}">
+              ${variant.title} - ${Shopify.formatMoney(variant.price)}
+            </option>
+          `;
         });
 
-        // Check special condition: Black + Medium => add Soft Winter Jacket
-        const selectedVariant = product.variants.find(v => v.id == variantId);
-        if (selectedVariant && selectedVariant.title.includes("Black") && selectedVariant.title.includes("Medium")) {
-          // Add Soft Winter Jacket (replace with actual variant ID of jacket)
-          const softWinterJacketVariantId = 1234567890; // TODO: update
+        popupDetails.innerHTML = `
+          <h2>${product.title}</h2>
+          <p>${Shopify.formatMoney(product.price)}</p>
+          <p>${product.description}</p>
+          <select id="variant-select">${variantsHtml}</select>
+          <button id="add-to-cart">Add to Cart</button>
+        `;
+
+        popup.classList.remove("hidden");
+
+        document.getElementById("add-to-cart").addEventListener("click", async () => {
+          const variantId = document.getElementById("variant-select").value;
+
+          // Add main product
           await fetch("/cart/add.js", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: softWinterJacketVariantId, quantity: 1 })
+            body: JSON.stringify({ id: variantId, quantity: 1 })
           });
-        }
 
-        alert("Added to cart!");
-        popup.remove();
-      });
+          // Special rule: Add "Soft Winter Jacket" if Black + Medium chosen
+          const chosenVariant = product.variants.find(v => v.id == variantId);
+          if (chosenVariant && chosenVariant.title.includes("Black") && chosenVariant.title.includes("Medium")) {
+            const winterJacket = window.allProducts?.find(p => p.title === "Soft Winter Jacket");
+            if (winterJacket && winterJacket.variants.length > 0) {
+              await fetch("/cart/add.js", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: winterJacket.variants[0].id, quantity: 1 })
+              });
+            }
+          }
+
+          alert("Product added to cart!");
+          popup.classList.add("hidden");
+        });
+
+      } catch (err) {
+        console.error("Error fetching product:", err);
+      }
     });
+  });
+
+  // Close popup
+  closeBtn.addEventListener("click", () => {
+    popup.classList.add("hidden");
+  });
+
+  popup.addEventListener("click", e => {
+    if (e.target === popup) popup.classList.add("hidden");
   });
 });
