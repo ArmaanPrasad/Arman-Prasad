@@ -1,136 +1,148 @@
 {% schema %}
 {
-  "name": "Custom Product Grid",
-  "settings": [],
+  "name": "Custom Grid",
+  "settings": {},
   "blocks": [
     {
       "type": "product",
       "name": "Product",
       "settings": {
-        "product": {
-          "type": "product",
-          "label": "Select Product"
-        }
+        "product": "product"
       }
     }
   ],
   "max_blocks": 6,
   "presets": [
     {
-      "name": "Custom Product Grid",
-      "category": "Custom"
+      "name": "Custom Grid",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
     }
   ]
 }
 {% endschema %}
 
-<section class="custom-grid">
-  <div class="grid-container">
-    {% for block in section.blocks %}
-      {% assign product = all_products[block.settings.product] %}
-      {% if product %}
-        <div class="grid-item">
-          <div class="product-card">
-            <img 
-              src="{{ product.featured_image | image_url: '400x400' }}" 
-              alt="{{ product.title }}" 
-              class="product-image"
-            >
-            <h3 class="product-title">{{ product.title }}</h3>
-            <p class="product-price">{{ product.price | money }}</p>
-            <button class="quick-view-btn" data-handle="{{ product.handle }}">
-              Quick View
-            </button>
-          </div>
-        </div>
-      {% endif %}
-    {% endfor %}
-  </div>
-</section>
+<div class="custom-grid">
+  {% for block in section.blocks %}
+    {% assign product = all_products[block.settings.product] %}
+    {% if product %}
+      <div class="custom-grid-item">
+        <img 
+          src="{{ product.featured_image | img_url: '400x400' }}" 
+          alt="{{ product.title }}" 
+          class="product-image">
 
-{% render 'product-popup' %}
+        <h3 class="product-title">{{ product.title }}</h3>
+        <p class="product-price">{{ product.price | money }}</p>
+
+        <button 
+          class="quick-view-btn" 
+          data-handle="{{ product.handle }}">
+          Quick View
+        </button>
+
+        <form method="post" action="/cart/add" class="add-to-cart-form">
+          <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+          <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+        </form>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
 
 <style>
 .custom-grid {
-  padding: 40px 20px;
-}
-.grid-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
+  margin: 40px 0;
 }
-.grid-item {
-  background: #fff;
+.custom-grid-item {
   border: 1px solid #eee;
-  padding: 10px;
+  padding: 15px;
   text-align: center;
-}
-.product-card {
-  position: relative;
-}
-.product-image {
-  width: 100%;
-  height: 300px; /* fixed height */
-  object-fit: cover; /* prevents stretching */
+  background: #fff;
   border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.custom-grid-item img {
+  width: 100%;
+  height: 250px; /* fixed height */
+  object-fit: contain; /* prevent stretching */
+  margin-bottom: 10px;
 }
 .product-title {
-  margin: 10px 0 5px;
   font-size: 16px;
+  margin: 5px 0;
 }
 .product-price {
-  margin: 0 0 15px;
   font-size: 14px;
-  color: #444;
+  color: #555;
+  margin-bottom: 15px;
 }
 .quick-view-btn {
   background: black;
   color: white;
   padding: 10px 15px;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  margin-bottom: 10px;
+  width: 100%;
 }
 .quick-view-btn:hover {
   background: #333;
 }
-@media(max-width: 768px) {
-  .grid-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.add-to-cart-btn {
+  background: #007aff;
+  color: #fff;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
 }
-@media(max-width: 480px) {
-  .grid-container {
-    grid-template-columns: 1fr;
-  }
+.add-to-cart-btn:hover {
+  background: #005bb5;
 }
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const quickViewButtons = document.querySelectorAll(".quick-view-btn");
-  const popup = document.querySelector(".product-popup");
-  const popupContent = document.querySelector(".product-popup-content");
-  const closeBtn = document.querySelector(".popup-close");
-
-  quickViewButtons.forEach(btn => {
-    btn.addEventListener("click", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll(".quick-view-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
       const handle = btn.getAttribute("data-handle");
-      try {
-        let res = await fetch(`/products/${handle}?view=popup`);
-        let html = await res.text();
-        popupContent.innerHTML = html;
-        popup.classList.add("active");
-      } catch (e) {
-        console.error("Quick view failed", e);
-      }
+      fetch(`/products/${handle}.js`)
+        .then(res => res.json())
+        .then(product => {
+          const popup = document.getElementById("product-popup");
+          if (!popup) return;
+          popup.querySelector(".popup-title").innerText = product.title;
+          popup.querySelector(".popup-price").innerText = 
+            (product.price / 100).toFixed(2);
+          popup.querySelector(".popup-description").innerHTML = product.description;
+
+          // populate variants
+          const variantSelect = popup.querySelector(".popup-variants");
+          variantSelect.innerHTML = "";
+          product.variants.forEach(variant => {
+            const opt = document.createElement("option");
+            opt.value = variant.id;
+            opt.textContent = variant.title + " - " + 
+              (variant.price / 100).toFixed(2);
+            variantSelect.appendChild(opt);
+          });
+
+          popup.style.display = "flex";
+        });
     });
   });
-
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      popup.classList.remove("active");
-    });
-  }
 });
 </script>
