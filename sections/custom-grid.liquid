@@ -1,102 +1,148 @@
 <section class="custom-grid">
-  <div class="grid-container">
-    {% for block in section.blocks %}
-      {% if block.settings.product != blank %}
-        {% assign product = all_products[block.settings.product] %}
-        <div class="grid-item">
-          <a href="javascript:void(0)" class="product-link" data-handle="{{ product.handle }}">
-            <img 
-              src="{{ product.featured_image | image_url: '400x' }}" 
-              alt="{{ product.title }}" 
-              class="product-image">
-          </a>
-          <h3 class="product-title">{{ product.title }}</h3>
-          <p class="product-price">{{ product.price | money }}</p>
-          <form method="post" action="/cart/add">
-            <input type="hidden" name="id" value="{{ product.variants.first.id }}">
-            <button type="submit" class="add-to-cart">Add to Cart</button>
-          </form>
-        </div>
-      {% endif %}
-    {% endfor %}
-  </div>
+  <div class="custom-grid-inner">
+    {% if section.settings.collection != blank %}
+      {% assign grid_collection = collections[section.settings.collection] %}
+      
+      {% if grid_collection.products_count > 0 %}
+        <div class="grid-products">
+          {% for product in grid_collection.products limit: 6 %}
+            <div class="grid-product-card">
+              
+              <!-- Product Image -->
+              <a href="{{ product.url }}">
+                {% if product.featured_image %}
+                  <img 
+                    src="{{ product.featured_image | image_url: '400x' }}" 
+                    alt="{{ product.title }}" 
+                    width="{{ product.featured_image.width }}"
+                    height="{{ product.featured_image.height }}"
+                    class="grid-product-image">
+                {% else %}
+                  {{ 'product-1' | placeholder_svg_tag }}
+                {% endif %}
+              </a>
 
-  {% render 'custom-popup' %}
+              <!-- Product Info -->
+              <h3 class="grid-product-title">{{ product.title }}</h3>
+              <p class="grid-product-price">{{ product.price | money }}</p>
+
+              <!-- Buttons -->
+              <div class="grid-product-actions">
+                <form method="post" action="{{ routes.cart_add_url }}">
+                  <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+                  <button type="submit" class="grid-add-btn">Add to Cart</button>
+                </form>
+
+                <button 
+                  type="button" 
+                  class="grid-quick-view-btn" 
+                  onclick="openProductPopup('{{ product.id }}')">
+                  Quick View
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>No products found in this collection.</p>
+      {% endif %}
+
+    {% else %}
+      <p>Please select a collection in the section settings.</p>
+    {% endif %}
+  </div>
 </section>
+
+<!-- Popup container -->
+<div id="popup-container" class="popup-hidden"></div>
+
+<script>
+  function openProductPopup(productId) {
+    fetch(`/products/${productId}?view=productpopup`)
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('popup-container').innerHTML = html;
+        document.getElementById('popup-container').classList.remove('popup-hidden');
+      });
+  }
+</script>
 
 <style>
 .custom-grid {
-  padding: 40px;
+  padding: 40px 20px;
 }
-.grid-container {
+.grid-products {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
-.grid-item {
-  text-align: center;
-  background: #fff;
-  padding: 20px;
+.grid-product-card {
   border: 1px solid #eee;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
 }
-.product-image {
+.grid-product-image {
   width: 100%;
   height: auto;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: transform 0.3s ease;
+  border-radius: 6px;
 }
-.product-image:hover {
-  transform: scale(1.05);
+.grid-product-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 12px 0 4px;
 }
-.add-to-cart {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background: black;
-  color: white;
+.grid-product-price {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
+}
+.grid-product-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.grid-add-btn,
+.grid-quick-view-btn {
+  padding: 8px 14px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: 0.3s;
 }
-.add-to-cart:hover {
+.grid-add-btn {
+  background: black;
+  color: white;
+}
+.grid-add-btn:hover {
   background: #333;
+}
+.grid-quick-view-btn {
+  background: #eee;
+  color: #111;
+}
+.grid-quick-view-btn:hover {
+  background: #ddd;
+}
+#popup-container.popup-hidden {
+  display: none;
 }
 </style>
 
 {% schema %}
 {
   "name": "Custom Product Grid",
-  "tag": "section",
-  "class": "section-custom-grid",
-  "max_blocks": 6,
-  "blocks": [
+  "settings": [
     {
-      "type": "product",
-      "name": "Product",
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Select product"
-        }
-      ]
+      "type": "collection",
+      "id": "collection",
+      "label": "Select Collection"
     }
   ],
   "presets": [
     {
-      "name": "Custom Product Grid",
-      "category": "Custom",
-      "blocks": [
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" }
-      ]
+      "name": "Custom Grid",
+      "category": "Custom"
     }
   ]
 }
