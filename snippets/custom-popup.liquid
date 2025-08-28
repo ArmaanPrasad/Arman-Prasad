@@ -19,7 +19,7 @@
 }
 .product-popup-box {
   position: relative; background: #fff; padding: 24px;
-  max-width: 480px; width: 100%; border-radius: 14px; z-index: 10000;
+  max-width: 520px; width: 100%; border-radius: 14px; z-index: 10000;
   box-shadow: 0 10px 35px rgba(0,0,0,0.25);
   font-family: Arial, sans-serif;
 }
@@ -30,7 +30,9 @@
 
 /* === POPUP CONTENT === */
 .product-popup-content img {
-  width: 100%; border-radius: 10px; margin-bottom: 16px;
+  display: block;
+  width: 160px; height: auto;
+  border-radius: 10px; margin-bottom: 16px;
 }
 .product-popup-content h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
 .product-popup-content .price { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
@@ -112,11 +114,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
 
+          // ✅ Use featured_image OR first image
+          const productImage = product.featured_image || (product.images.length > 0 ? product.images[0] : "");
+
           popupContent.innerHTML = `
-            <img src="${product.images[0]}" alt="${product.title}">
+            <img src="${productImage}" alt="${product.title}">
             <h2>${product.title}</h2>
             <p class="price">₹${(product.price/100).toFixed(2)}</p>
-            <p class="description">${product.description}</p>
+            <p class="description">${product.description || "No description available."}</p>
             <form class="popup-cart-form">
               ${colorOptions}
               ${sizeOptions}
@@ -124,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </form>
           `;
 
+          // === Handle color selection ===
           let selectedColor = null;
           popupContent.querySelectorAll(".color-btn").forEach(btn => {
             btn.addEventListener("click", () => {
@@ -133,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
           });
 
-          // Add to cart
+          // === Add to cart ===
           const form = popupContent.querySelector(".popup-cart-form");
           form.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -158,10 +164,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ id: chosenVariant.id, quantity: 1 })
               });
 
-              // Update cart count without refresh
+              // Update cart count
               const cartRes = await fetch("/cart.js");
               const cart = await cartRes.json();
-              const cartCount = document.querySelector(".cart-count"); // <- add this span in header
+              const cartCount = document.querySelector(".cart-count");
               if (cartCount) cartCount.textContent = cart.item_count;
 
               alert("Added to cart!");
