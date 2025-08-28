@@ -1,111 +1,20 @@
-<section class="custom-grid">
-  <div class="grid-wrap">
-    {% for block in section.blocks %}
-      {% assign product = block.settings.product %}
-      <div class="grid-card" {{ block.shopify_attributes }}>
-        {% if product %}
-          <a href="{{ product.url }}" class="grid-image-link">
-            {% if product.featured_image %}
-              {{ product.featured_image
-                | image_url: width: 600
-                | image_tag: alt: product.title, class: 'grid-image', loading: 'lazy' }}
-            {% else %}
-              {{ 'product-1' | placeholder_svg_tag: 'grid-image placeholder-svg' }}
-            {% endif %}
-          </a>
-
-          <h3 class="grid-title">{{ product.title }}</h3>
-          <p class="grid-price">{{ product.price | money }}</p>
-
-          <div class="grid-actions">
-            <form method="post" action="{{ routes.cart_add_url }}">
-              <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-              <button type="submit" class="btn add-btn">Add to Cart</button>
-            </form>
-
-            <button
-              type="button"
-              class="btn quick-view-btn"
-              data-handle="{{ product.handle }}">
-              Quick View
-            </button>
-          </div>
-        {% else %}
-          <div class="grid-placeholder">
-            {{ 'product-1' | placeholder_svg_tag: 'grid-image placeholder-svg' }}
-            <h3 class="grid-title">Select a product</h3>
-            <p class="grid-hint">Add a product in the section settings.</p>
-          </div>
-        {% endif %}
-      </div>
-    {% endfor %}
-  </div>
-
-  {% render 'product-popup' %}
-</section>
-
-<style>
-.custom-grid { padding: 32px 16px; }
-.grid-wrap {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 24px;
-}
-.grid-card {
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 10px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.grid-image { width: 100%; height: auto; border-radius: 8px; display: block; }
-.grid-title { margin: 12px 0 6px; font-size: 18px; font-weight: 600; }
-.grid-price { margin: 0 0 12px; color: #333; font-weight: 600; }
-.grid-actions { margin-top: auto; display: flex; gap: 10px; }
-.btn {
-  padding: 10px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.add-btn { background: #000; color: #fff; }
-.add-btn:hover { background: #333; }
-.quick-view-btn { background: #eee; color: #111; }
-.quick-view-btn:hover { background: #ddd; }
-.grid-placeholder { text-align: center; color: #777; }
-.grid-hint { font-size: 12px; margin-top: 6px; }
-
-@media (max-width: 900px) {
-  .grid-wrap { grid-template-columns: repeat(2, minmax(0,1fr)); }
-}
-@media (max-width: 520px) {
-  .grid-wrap { grid-template-columns: 1fr; }
-}
-</style>
-
 {% schema %}
 {
-  "name": "Custom Product Grid",
-  "max_blocks": 6,
-  "settings": [],
+  "name": "Custom Grid",
+  "settings": {},
   "blocks": [
     {
       "type": "product",
       "name": "Product",
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Select product"
-        }
-      ]
+      "settings": {
+        "product": "product"
+      }
     }
   ],
+  "max_blocks": 6,
   "presets": [
     {
-      "name": "Custom Product Grid",
+      "name": "Custom Grid",
       "blocks": [
         { "type": "product" },
         { "type": "product" },
@@ -118,3 +27,96 @@
   ]
 }
 {% endschema %}
+
+<div class="custom-grid">
+  {% for block in section.blocks %}
+    {% assign product = all_products[block.settings.product] %}
+    {% if product %}
+      <div class="custom-grid-item">
+        <img src="{{ product.featured_image | img_url: 'medium' }}" alt="{{ product.title }}" class="product-image">
+
+        <h3 class="product-title">{{ product.title }}</h3>
+        <p class="product-price">{{ product.price | money }}</p>
+
+        <button 
+          class="quick-view-btn" 
+          data-handle="{{ product.handle }}">
+          Quick View
+        </button>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<style>
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 40px 0;
+}
+.custom-grid-item {
+  border: 1px solid #eee;
+  padding: 15px;
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.custom-grid-item img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+.product-title {
+  font-size: 16px;
+  margin: 5px 0;
+}
+.product-price {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
+}
+.quick-view-btn {
+  background: black;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.quick-view-btn:hover {
+  background: #333;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll(".quick-view-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const handle = btn.getAttribute("data-handle");
+      fetch(`/products/${handle}.js`)
+        .then(res => res.json())
+        .then(product => {
+          const popup = document.getElementById("product-popup");
+          popup.querySelector(".popup-title").innerText = product.title;
+          popup.querySelector(".popup-price").innerText = (product.price / 100).toFixed(2);
+          popup.querySelector(".popup-description").innerHTML = product.description;
+
+          // populate variants
+          const variantSelect = popup.querySelector(".popup-variants");
+          variantSelect.innerHTML = "";
+          product.variants.forEach(variant => {
+            const opt = document.createElement("option");
+            opt.value = variant.id;
+            opt.textContent = variant.title + " - " + (variant.price / 100).toFixed(2);
+            variantSelect.appendChild(opt);
+          });
+
+          popup.style.display = "block";
+        });
+    });
+  });
+});
+</script>
