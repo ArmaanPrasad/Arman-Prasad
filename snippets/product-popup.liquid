@@ -1,15 +1,10 @@
-{% comment %}
-  Product Popup Snippet
-  Place this file in: snippets/product-popup.liquid
-  Render with: {% render 'product-popup', product: product %}
-{% endcomment %}
-
+<div class="popup-overlay" onclick="closeProductPopup()"></div>
 <div class="popup-product">
   <div class="popup-left">
     {% if product.featured_image %}
       <img 
         src="{{ product.featured_image | image_url: '600x' }}" 
-        alt="{{ product.title | escape }}"
+        alt="{{ product.title }}" 
         width="{{ product.featured_image.width }}"
         height="{{ product.featured_image.height }}"
         class="popup-product-image">
@@ -34,18 +29,29 @@
 </div>
 
 <style>
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
 .popup-product {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: start;
-  padding: 20px;
-  max-width: 900px;
-  margin: auto;
+  padding: 24px;
+  border-radius: 10px;
+  max-width: 800px;
+  width: 90%;
+  z-index: 1000;
 }
 .popup-left img {
   width: 100%;
-  height: auto;
   border-radius: 8px;
 }
 .popup-right {
@@ -56,7 +62,6 @@
 .popup-product-title {
   font-size: 28px;
   font-weight: 700;
-  color: #111;
 }
 .popup-product-price {
   font-size: 20px;
@@ -66,7 +71,6 @@
 .popup-product-description {
   font-size: 14px;
   color: #555;
-  line-height: 1.5;
 }
 .popup-add-btn {
   padding: 12px 24px;
@@ -81,3 +85,10 @@
   background: #333;
 }
 </style>
+
+<script>
+function closeProductPopup() {
+  document.getElementById('popup-container').innerHTML = '';
+  document.getElementById('popup-container').classList.add('popup-hidden');
+}
+</script>
