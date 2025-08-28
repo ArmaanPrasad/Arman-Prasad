@@ -1,233 +1,114 @@
+<section class="custom-grid">
+  <div class="grid-inner">
+    {% for product in collections.all.products limit: 12 %}
+      <div class="grid-item">
+        <a href="{{ product.url }}" class="grid-link">
+          <img 
+            src="{{ product.featured_image | image_url: '600x600' }}" 
+            alt="{{ product.title }}" 
+            class="grid-image"
+            loading="lazy">
+          <h3 class="grid-title">{{ product.title }}</h3>
+          <p class="grid-price">{{ product.price | money }}</p>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<style>
+.custom-grid {
+  padding: 60px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.grid-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns desktop */
+  gap: 30px;
+}
+
+.grid-item {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.grid-item:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+}
+
+.grid-link {
+  text-decoration: none;
+  display: block;
+  color: inherit;
+}
+
+.grid-image {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
+
+.grid-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 16px;
+  color: #111;
+}
+
+.grid-price {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0 16px 20px;
+}
+
+/* 🔹 Responsive Grid */
+@media (max-width: 992px) {
+  .grid-inner {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns tablet */
+  }
+  .grid-image {
+    height: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  .custom-grid {
+    padding: 40px 20px;
+  }
+  .grid-inner {
+    grid-template-columns: 1fr; /* 1 column mobile */
+  }
+  .grid-image {
+    height: 240px;
+  }
+  .grid-title {
+    font-size: 1.1rem;
+  }
+  .grid-price {
+    font-size: 0.95rem;
+  }
+}
+</style>
+
 {% schema %}
 {
   "name": "Custom Grid",
-  "blocks": [
-    {
-      "type": "product",
-      "name": "Product",
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Select product"
-        }
-      ]
-    }
-  ],
-  "max_blocks": 6,
+  "tag": "section",
+  "class": "section-custom-grid",
+  "settings": [],
   "presets": [
     {
       "name": "Custom Grid",
-      "blocks": [
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" },
-        { "type": "product" }
-      ]
+      "category": "Custom"
     }
   ]
 }
 {% endschema %}
-
-<div class="custom-grid">
-  {% for block in section.blocks %}
-    {% assign product = all_products[block.settings.product] %}
-    {% if product %}
-      <div class="custom-grid-item">
-        <img 
-          src="{{ product.featured_image | img_url: '400x400' }}" 
-          alt="{{ product.title }}" 
-          class="product-image">
-
-        <h3 class="product-title">{{ product.title }}</h3>
-        <p class="product-price">{{ product.price | money }}</p>
-
-        <button 
-          class="quick-view-btn" 
-          data-handle="{{ product.handle }}">
-          Quick View
-        </button>
-      </div>
-    {% endif %}
-  {% endfor %}
-</div>
-
-<!-- Product Popup -->
-<div id="product-popup" class="popup-overlay" style="display:none;">
-  <div class="popup-content">
-    <button class="popup-close">&times;</button>
-    <h2 class="popup-title"></h2>
-    <p class="popup-price"></p>
-    <div class="popup-description"></div>
-    <select class="popup-variants"></select>
-    <button class="popup-add-to-cart">Add to Cart</button>
-  </div>
-</div>
-
-<style>
-.custom-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin: 40px 0;
-}
-.custom-grid-item {
-  border: 1px solid #eee;
-  padding: 15px;
-  text-align: center;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-.custom-grid-item img {
-  width: 100%;
-  height: 250px;
-  object-fit: contain;
-  margin-bottom: 10px;
-}
-.product-title {
-  font-size: 16px;
-  margin: 5px 0;
-}
-.product-price {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 15px;
-}
-.quick-view-btn {
-  display: block;
-  width: 100%;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  background: black;
-  color: white;
-  cursor: pointer;
-}
-.quick-view-btn:hover { background: #333; }
-
-/* Popup styling */
-.popup-overlay {
-  position: fixed;
-  top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.popup-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  width: 500px;
-  max-width: 90%;
-  position: relative;
-}
-.popup-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-}
-.popup-add-to-cart {
-  margin-top: 10px;
-  background: black;
-  color: white;
-  padding: 10px;
-  width: 100%;
-  border: none;
-  border-radius: 4px;
-}
-</style>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".quick-view-btn");
-  const popup = document.getElementById("product-popup");
-  const closeBtn = popup.querySelector(".popup-close");
-  const titleEl = popup.querySelector(".popup-title");
-  const priceEl = popup.querySelector(".popup-price");
-  const descEl = popup.querySelector(".popup-description");
-  const variantSelect = popup.querySelector(".popup-variants");
-  const addToCartBtn = popup.querySelector(".popup-add-to-cart");
-
-  let currentProduct = null;
-
-  // Open popup
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const handle = btn.getAttribute("data-handle");
-      fetch(`/products/${handle}.js`)
-        .then(res => res.json())
-        .then(product => {
-          currentProduct = product;
-          titleEl.innerText = product.title;
-          priceEl.innerText = "₹" + (product.price / 100).toFixed(2);
-          descEl.innerHTML = product.description;
-
-          variantSelect.innerHTML = "";
-          product.variants.forEach(variant => {
-            const opt = document.createElement("option");
-            opt.value = variant.id;
-            opt.textContent = variant.title + " - ₹" + (variant.price / 100).toFixed(2);
-            variantSelect.appendChild(opt);
-          });
-
-          popup.style.display = "flex";
-        });
-    });
-  });
-
-  // Close popup
-  closeBtn.addEventListener("click", () => {
-    popup.style.display = "none";
-  });
-
-  // Add to cart
-  addToCartBtn.addEventListener("click", () => {
-    if (!currentProduct) return;
-
-    const selectedVariantId = variantSelect.value;
-
-    // Add main product
-    fetch("/cart/add.js", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: selectedVariantId, quantity: 1 })
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Added to cart:", data);
-
-      // Check if selected variant matches condition (Black + Medium)
-      const selectedVariant = currentProduct.variants.find(v => v.id == selectedVariantId);
-      if (selectedVariant && selectedVariant.title.includes("Black") && selectedVariant.title.includes("Medium")) {
-        // Add Soft Winter Jacket automatically
-        fetch("/products/soft-winter-jacket.js")
-          .then(res => res.json())
-          .then(jacket => {
-            const jacketVariant = jacket.variants[0];
-            return fetch("/cart/add.js", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: jacketVariant.id, quantity: 1 })
-            });
-          })
-          .then(res => res.json())
-          .then(data => {
-            console.log("Soft Winter Jacket also added:", data);
-          });
-      }
-
-      popup.style.display = "none";
-    })
-    .catch(err => console.error("Cart error:", err));
-  });
-});
-</script>
