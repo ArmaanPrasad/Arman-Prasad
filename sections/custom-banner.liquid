@@ -48,9 +48,9 @@
 
 .banner-content {
   position: absolute;
-  top: 50%;
+  bottom: 40px; /* distance from bottom */
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%); /* centers horizontally */
   text-align: center;
   color: #000;
 }
@@ -86,47 +86,3 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
 </style>
-
-{% schema %}
-{
-  "name": "Custom Banner",
-  "tag": "section",
-  "class": "section-custom-banner",
-  "settings": [
-    {
-      "type": "image_picker",
-      "id": "banner_image",
-      "label": "Banner Image"
-    },
-    {
-      "type": "text",
-      "id": "banner_heading",
-      "label": "Heading",
-      "default": "Your Banner Heading"
-    },
-    {
-      "type": "text",
-      "id": "banner_subheading",
-      "label": "Subheading",
-      "default": "Your Banner Subheading"
-    },
-    {
-      "type": "text",
-      "id": "banner_button_label",
-      "label": "Button Label",
-      "default": "Shop Now"
-    },
-    {
-      "type": "url",
-      "id": "banner_button_link",
-      "label": "Button Link"
-    }
-  ],
-  "presets": [
-    {
-      "name": "Custom Banner",
-      "category": "Custom"
-    }
-  ]
-}
-{% endschema %}
