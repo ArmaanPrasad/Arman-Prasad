@@ -1,41 +1,72 @@
-{% schema %}
-{
-  "name": "Custom Banner",
-  "settings": [
-    { "type": "text", "id": "heading", "label": "Heading", "default": "The Gift Guide" },
-    { "type": "textarea", "id": "subtext", "label": "Subtext", "default": "Discover Joy: Your Ultimate Holiday Gift Destination." },
-    { "type": "text", "id": "button_label", "label": "Button Label", "default": "Shop Now" },
-    { "type": "url", "id": "button_link", "label": "Button Link" }
-  ]
-}
-{% endschema %}
-
 <section class="custom-banner">
-  <div class="banner-content">
-    <h1>{{ section.settings.heading }}</h1>
-    <p>{{ section.settings.subtext }}</p>
-    <a href="{{ section.settings.button_link }}" class="banner-btn">{{ section.settings.button_label }}</a>
+  <div class="banner-inner">
+    {% if section.settings.banner_image != blank %}
+      <img 
+        src="{{ section.settings.banner_image | image_url: '1600x' }}" 
+        alt="{{ section.settings.banner_heading | escape }}" 
+        class="banner-image"
+        width="{{ section.settings.banner_image.width }}"
+        height="{{ section.settings.banner_image.height }}">
+    {% else %}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'banner-placeholder' }}
+    {% endif %}
+
+    <div class="banner-content">
+      {% if section.settings.banner_heading != blank %}
+        <h2 class="banner-heading">{{ section.settings.banner_heading }}</h2>
+      {% endif %}
+      {% if section.settings.banner_subheading != blank %}
+        <p class="banner-subheading">{{ section.settings.banner_subheading }}</p>
+      {% endif %}
+      {% if section.settings.banner_button_label != blank and section.settings.banner_button_link != blank %}
+        <a href="{{ section.settings.banner_button_link }}" class="banner-button">
+          {{ section.settings.banner_button_label }}
+        </a>
+      {% endif %}
+    </div>
   </div>
 </section>
 
-<style>
-.custom-banner {
-  padding: 80px 20px;
-  text-align: center;
-  background: #f2f6fb;
+{% schema %}
+{
+  "name": "Custom Banner",
+  "tag": "section",
+  "class": "section-custom-banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "banner_image",
+      "label": "Banner Image"
+    },
+    {
+      "type": "text",
+      "id": "banner_heading",
+      "label": "Heading",
+      "default": "Your Banner Heading"
+    },
+    {
+      "type": "text",
+      "id": "banner_subheading",
+      "label": "Subheading",
+      "default": "Your Banner Subheading"
+    },
+    {
+      "type": "text",
+      "id": "banner_button_label",
+      "label": "Button Label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "banner_button_link",
+      "label": "Button Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Banner",
+      "category": "Custom"
+    }
+  ]
 }
-.custom-banner h1 { font-size: 48px; margin-bottom: 15px; }
-.custom-banner p { font-size: 18px; margin-bottom: 25px; }
-.banner-btn {
-  display: inline-block;
-  padding: 12px 30px;
-  background: #000;
-  color: #fff;
-  border-radius: 30px;
-  transition: transform 0.3s ease, background 0.3s ease;
-}
-.banner-btn:hover {
-  background: #444;
-  transform: scale(1.05);
-}
-</style>
+{% endschema %}
