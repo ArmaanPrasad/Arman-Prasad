@@ -1,51 +1,76 @@
+<!-- QUICK VIEW POPUP -->
 <div class="product-popup">
   <div class="product-popup-overlay"></div>
   <div class="product-popup-box">
     <button class="popup-close">&times;</button>
-    <div class="product-popup-content">
-      <!-- Product info injected here -->
-    </div>
+    <div class="product-popup-content"></div>
   </div>
 </div>
 
 <style>
+/* === POPUP BASE === */
 .product-popup { 
   position: fixed; inset: 0; display: none; 
   align-items: center; justify-content: center; z-index: 9999; 
 }
 .product-popup.active { display: flex; }
 .product-popup-overlay { 
-  position: absolute; inset: 0; background: rgba(0,0,0,0.5); 
+  position: absolute; inset: 0; background: rgba(0,0,0,0.55); 
 }
 .product-popup-box {
-  position: relative; background: #fff; padding: 20px;
-  max-width: 500px; width: 100%; border-radius: 12px; z-index: 10000;
+  position: relative; background: #fff; padding: 24px;
+  max-width: 480px; width: 100%; border-radius: 14px; z-index: 10000;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+  font-family: Arial, sans-serif;
 }
 .popup-close {
-  position: absolute; top: 12px; right: 15px;
-  background: none; border: none; font-size: 22px; cursor: pointer;
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; font-size: 26px; cursor: pointer;
 }
+
+/* === POPUP CONTENT === */
 .product-popup-content img {
-  width: 100%; border-radius: 8px; margin-bottom: 15px;
+  width: 100%; border-radius: 10px; margin-bottom: 16px;
 }
-.product-popup-content h2 { font-size: 22px; margin-bottom: 6px; }
-.product-popup-content .price { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
-.product-popup-content .description { font-size: 14px; color: #444; margin-bottom: 16px; }
+.product-popup-content h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+.product-popup-content .price { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+.product-popup-content .description { font-size: 14px; color: #555; margin-bottom: 18px; }
+
 .variant-group { margin-bottom: 16px; }
 .variant-group label { display: block; font-weight: 600; margin-bottom: 6px; }
-.variant-colors { display: flex; gap: 10px; }
+.variant-colors { display: flex; gap: 12px; }
 .variant-colors button {
-  padding: 8px 16px; border: 1px solid #ccc; cursor: pointer;
-  border-radius: 6px; background: #fff;
+  padding: 8px 20px; border: 1px solid #bbb; cursor: pointer;
+  border-radius: 6px; background: #fff; transition: 0.2s;
 }
-.variant-colors button.active { border: 2px solid black; }
-.variant-dropdown { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-.popup-add-to-cart {
-  display: block; width: 100%; padding: 14px;
-  background: black; color: white; font-size: 16px; 
-  border: none; cursor: pointer; border-radius: 8px; 
+.variant-colors button.active { border: 2px solid #000; background: #f9f9f9; }
+.variant-dropdown { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; }
+
+/* === BUTTONS === */
+.popup-add-to-cart,
+.quick-view-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  width: 100%; padding: 14px;
+  background: black; color: white; font-size: 15px; font-weight: 600;
+  border: none; cursor: pointer; border-radius: 8px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  transition: all 0.25s ease;
+  position: relative;
 }
-.popup-add-to-cart:hover { background: #333; }
+.popup-add-to-cart::after,
+.quick-view-btn::after {
+  content: "→";
+  font-size: 16px;
+  margin-left: 6px;
+  transition: transform 0.2s ease;
+}
+.popup-add-to-cart:hover::after,
+.quick-view-btn:hover::after {
+  transform: translateX(4px);
+}
+.popup-add-to-cart:hover,
+.quick-view-btn:hover { background: #333; }
 </style>
 
 <script>
@@ -54,17 +79,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const popupContent = popup.querySelector(".product-popup-content");
   const closeBtn = popup.querySelector(".popup-close");
 
-  // open popup
+  // Open popup
   document.querySelectorAll(".quick-view-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const handle = btn.getAttribute("data-handle");
       fetch(`/products/${handle}.js`)
         .then(res => res.json())
         .then(product => {
-          // Build product HTML
           let colorOptions = "";
           let sizeOptions = "";
-          product.options.forEach((opt, i) => {
+
+          product.options.forEach(opt => {
             if (opt.name.toLowerCase() === "color") {
               colorOptions = `
                 <div class="variant-group">
@@ -80,6 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="variant-group">
                   <label>${opt.name}</label>
                   <select class="variant-dropdown" data-option="${opt.name}">
+                    <option value="">Choose your ${opt.name}</option>
                     ${opt.values.map(val => `<option value="${val}">${val}</option>`).join("")}
                   </select>
                 </div>`;
@@ -94,11 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <form class="popup-cart-form">
               ${colorOptions}
               ${sizeOptions}
-              <button type="submit" class="popup-add-to-cart">ADD TO CART →</button>
+              <button type="submit" class="popup-add-to-cart">Add to Cart</button>
             </form>
           `;
 
-          // color button logic
           let selectedColor = null;
           popupContent.querySelectorAll(".color-btn").forEach(btn => {
             btn.addEventListener("click", () => {
@@ -116,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const sizeSelect = form.querySelector(".variant-dropdown");
             const selectedSize = sizeSelect ? sizeSelect.value : null;
 
-            // find correct variant
             const chosenVariant = product.variants.find(v => {
               return (!selectedColor || v.title.toLowerCase().includes(selectedColor.toLowerCase())) &&
                      (!selectedSize || v.title.toLowerCase().includes(selectedSize.toLowerCase()));
@@ -128,34 +152,22 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-              // add chosen product
               await fetch("/cart/add.js", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: chosenVariant.id, quantity: 1 })
               });
 
-              // condition: if Black + Medium → auto add Soft Winter Jacket
-              if (
-                chosenVariant.title.toLowerCase().includes("black") &&
-                chosenVariant.title.toLowerCase().includes("medium")
-              ) {
-                const jacketHandle = "soft-winter-jacket"; // <-- replace with actual handle
-                const res = await fetch(`/products/${jacketHandle}.js`);
-                const jacket = await res.json();
-                const jacketVariantId = jacket.variants[0].id;
+              // Update cart count without refresh
+              const cartRes = await fetch("/cart.js");
+              const cart = await cartRes.json();
+              const cartCount = document.querySelector(".cart-count"); // <- add this span in header
+              if (cartCount) cartCount.textContent = cart.item_count;
 
-                await fetch("/cart/add.js", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: jacketVariantId, quantity: 1 })
-                });
-              }
-
-              alert("Added to cart successfully!");
+              alert("Added to cart!");
             } catch (err) {
               console.error(err);
-              alert("Something went wrong!");
+              alert("Error adding to cart!");
             }
           });
 
@@ -164,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // close
+  // Close
   closeBtn.addEventListener("click", () => popup.classList.remove("active"));
   popup.querySelector(".product-popup-overlay").addEventListener("click", () => popup.classList.remove("active"));
 });
