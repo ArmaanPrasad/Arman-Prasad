@@ -118,8 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // find correct variant
             const chosenVariant = product.variants.find(v => {
-              return (!selectedColor || v.title.includes(selectedColor)) &&
-                     (!selectedSize || v.title.includes(selectedSize));
+              return (!selectedColor || v.title.toLowerCase().includes(selectedColor.toLowerCase())) &&
+                     (!selectedSize || v.title.toLowerCase().includes(selectedSize.toLowerCase()));
             });
 
             if (!chosenVariant) {
@@ -136,8 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
               });
 
               // condition: if Black + Medium → auto add Soft Winter Jacket
-              if (chosenVariant.title.includes("Black") && chosenVariant.title.includes("Medium")) {
-                const jacketHandle = "soft-winter-jacket"; // replace with your handle
+              if (
+                chosenVariant.title.toLowerCase().includes("black") &&
+                chosenVariant.title.toLowerCase().includes("medium")
+              ) {
+                const jacketHandle = "soft-winter-jacket"; // <-- replace with actual handle
                 const res = await fetch(`/products/${jacketHandle}.js`);
                 const jacket = await res.json();
                 const jacketVariantId = jacket.variants[0].id;
