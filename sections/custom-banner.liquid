@@ -13,7 +13,7 @@
 
     <div class="banner-content">
       {% if section.settings.banner_heading != blank %}
-        <h2 class="banner-heading">{{ section.settings.banner_heading }}</h2>
+        <h1 class="banner-heading">{{ section.settings.banner_heading }}</h1>
       {% endif %}
       {% if section.settings.banner_subheading != blank %}
         <p class="banner-subheading">{{ section.settings.banner_subheading }}</p>
@@ -28,44 +28,59 @@
 </section>
 
 <style>
+/* Make banner full height */
+.custom-banner {
+  position: relative;
+  width: 100%;
+  min-height: 80vh; /* increase section height */
+  display: flex;
+  align-items: flex-end; /* content at bottom */
+  justify-content: center;
+  overflow: hidden;
+}
+
 .banner-inner {
   position: relative;
   width: 100%;
+  height: 100%;
 }
 
-/* Image fills width */
 .banner-image {
   width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Text & button on top of image */
-.banner-content {
+  height: 100%;
+  object-fit: cover;
   position: absolute;
-  bottom: 40px;  /* move up from bottom */
-  left: 40px;    /* small gap from left */
-  z-index: 2;    /* keep on top of image */
-  color: black;
-  text-align: left;
+  top: 0;
+  left: 0;
+  z-index: 1;
 }
 
-/* Heading & Subheading */
+.banner-content {
+  position: relative;
+  z-index: 2;
+  text-align: left;
+  color: #000; /* text black */
+  margin: 0 0 50px 60px; /* spacing from bottom + left */
+}
+
 .banner-heading {
-  font-size: 2.5rem;
-  margin: 0 0 10px;
+  font-size: 3rem; /* bigger */
+  font-weight: 800; /* extra bold */
+  color: #111; /* darker */
+  margin-bottom: 10px;
 }
 
 .banner-subheading {
   font-size: 1.25rem;
-  margin: 0 0 20px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20px;
 }
 
-/* Button */
 .banner-button {
   display: inline-block;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #000, #333);
+  background: #000;
   color: #fff;
   font-weight: 600;
   border-radius: 40px;
@@ -76,7 +91,7 @@
 }
 
 .banner-button:hover {
-  background: linear-gradient(135deg, #333, #000);
+  background: #333;
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
