@@ -1,6 +1,6 @@
 {% comment %}
 Custom Grid Section
-- Lets merchant pick 6 products
+- Lets merchant pick up to 6 products
 - Displays product image, title, price
 - Click → opens popup
 {% endcomment %}
@@ -12,12 +12,12 @@ Custom Grid Section
       {% if product %}
         <div class="grid-item" data-handle="{{ product.handle }}">
           {% if product.featured_image %}
-  <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
-{% elsif product.images.size > 0 %}
-  <img src="{{ product.images[0] | image_url: width: 400 }}" alt="{{ product.title }}">
-{% else %}
-  <img src="{{ 'placeholder-image.png' | asset_url }}" alt="No image available">
-{% endif %}
+            <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
+          {% elsif product.images.size > 0 %}
+            <img src="{{ product.images[0] | image_url: width: 400 }}" alt="{{ product.title }}">
+          {% else %}
+            <img src="{{ 'placeholder-image.png' | asset_url }}" alt="No image available">
+          {% endif %}
 
           <h3>{{ product.title }}</h3>
           <p>{{ product.price | money }}</p>
@@ -25,7 +25,8 @@ Custom Grid Section
       {% endif %}
     {% endfor %}
   </div>
-  {% render 'custom-popup' %}
+
+  {%- render 'custom-popup' -%}
 </section>
 
 <style>
@@ -42,9 +43,15 @@ Custom Grid Section
     text-align: center;
     transition: all 0.2s ease;
   }
-  .grid-item:hover { transform: translateY(-3px); }
+  .grid-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,.08);
+  }
   @media(max-width: 768px) {
     .custom-grid .grid-container { grid-template-columns: 1fr 1fr; }
+  }
+  @media(max-width: 480px) {
+    .custom-grid .grid-container { grid-template-columns: 1fr; }
   }
 </style>
 
