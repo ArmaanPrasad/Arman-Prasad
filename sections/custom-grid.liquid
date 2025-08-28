@@ -37,11 +37,13 @@
     {% if product %}
       <div class="custom-grid-item">
         <img 
-          src="{{ product.featured_image | img_url: '400x400' }}" 
+          src="{{ product.featured_image | img_url: '600x600' }}" 
           alt="{{ product.title }}" 
           class="product-image">
+
         <h3 class="product-title">{{ product.title }}</h3>
         <p class="product-price">{{ product.price | money }}</p>
+
         <button class="quick-view-btn" data-handle="{{ product.handle }}">
           Quick View
         </button>
@@ -63,78 +65,75 @@
 </div>
 
 <style>
+/* 🔹 Grid Layout */
 .custom-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 24px;
   margin: 40px 0;
 }
 
 .custom-grid-item {
   border: 1px solid #eee;
-  padding: 15px;
+  padding: 16px;
   text-align: center;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease;
 }
 
-.custom-grid-item img {
+.custom-grid-item:hover {
+  transform: translateY(-4px);
+}
+
+/* 🔹 Product Images */
+.product-image {
   width: 100%;
-  height: 250px;
-  object-fit: contain;
-  margin-bottom: 10px;
+  height: 320px;       /* Bigger image */
+  object-fit: cover;   /* Fill space evenly */
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 
+/* 🔹 Product Info */
 .product-title {
   font-size: 16px;
-  margin: 5px 0;
+  font-weight: 600;
+  margin: 8px 0 4px;
+  min-height: 20px;
 }
 
 .product-price {
-  font-size: 14px;
+  font-size: 15px;
   color: #555;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
-.quick-view-btn {
+/* 🔹 Buttons */
+.quick-view-btn,
+.popup-add-to-cart {
   display: block;
   width: 100%;
-  padding: 10px 15px;
+  padding: 12px 15px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background: black;
   color: white;
   cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
 }
 
-.quick-view-btn:hover {
+.quick-view-btn:hover,
+.popup-add-to-cart:hover {
   background: #333;
 }
 
-/* 🔹 Responsive grid fix: Always 2-2-2 */
-@media (max-width: 1024px) {
-  .custom-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 600px) {
-  .custom-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-  }
-  .custom-grid-item img {
-    height: 200px;
-  }
-  .product-title {
-    font-size: 14px;
-  }
-  .product-price {
-    font-size: 13px;
-  }
-}
-  
-/* Popup styling */
+/* 🔹 Popup styling */
 .popup-overlay {
   position: fixed;
   top:0; left:0; right:0; bottom:0;
@@ -144,14 +143,17 @@
   justify-content: center;
   z-index: 1000;
 }
+
 .popup-content {
   background: #fff;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 24px;
+  border-radius: 10px;
   width: 500px;
   max-width: 90%;
   position: relative;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
+
 .popup-close {
   position: absolute;
   top: 10px;
@@ -161,14 +163,24 @@
   font-size: 24px;
   cursor: pointer;
 }
-.popup-add-to-cart {
-  margin-top: 10px;
-  background: black;
-  color: white;
-  padding: 10px;
-  width: 100%;
-  border: none;
-  border-radius: 4px;
+
+/* 🔹 Responsive */
+@media (max-width: 992px) {
+  .custom-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns tablet */
+  }
+  .product-image {
+    height: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  .custom-grid {
+    grid-template-columns: 1fr; /* single column mobile */
+  }
+  .product-image {
+    height: 240px;
+  }
 }
 </style>
 
@@ -225,6 +237,25 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(res => res.json())
     .then(data => {
       console.log("Added to cart:", data);
+
+      const selectedVariant = currentProduct.variants.find(v => v.id == selectedVariantId);
+      if (selectedVariant && selectedVariant.title.includes("Black") && selectedVariant.title.includes("Medium")) {
+        fetch("/products/soft-winter-jacket.js")
+          .then(res => res.json())
+          .then(jacket => {
+            const jacketVariant = jacket.variants[0];
+            return fetch("/cart/add.js", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: jacketVariant.id, quantity: 1 })
+            });
+          })
+          .then(res => res.json())
+          .then(data => {
+            console.log("Soft Winter Jacket also added:", data);
+          });
+      }
+
       popup.style.display = "none";
     })
     .catch(err => console.error("Cart error:", err));
