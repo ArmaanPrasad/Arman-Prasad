@@ -1,71 +1,69 @@
-<section class="custom-banner">
-  <div class="banner-inner">
-    {% if section.settings.banner_image != blank %}
-      <img 
-        src="{{ section.settings.banner_image | img_url: '1600x' }}" 
-        alt="{{ section.settings.banner_heading | escape }}" 
-        class="banner-image"
-        width="{{ section.settings.banner_image.width }}"
-        height="{{ section.settings.banner_image.height }}">
-    {% else %}
-      {{ 'lifestyle-1' | placeholder_svg_tag: 'banner-placeholder' }}
-    {% endif %}
+{{ 'custom-grid.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'custom-grid.js' | asset_url }}" defer="defer"></script>
 
-    <div class="banner-content">
-      {% if section.settings.banner_heading != blank %}
-        <h2 class="banner-heading">{{ section.settings.banner_heading }}</h2>
+<section class="custom-grid">
+  <div class="grid-inner">
+    {% for block in section.blocks %}
+      {% assign product = block.settings.product %}
+      {% if product != blank %}
+        <div class="grid-item" data-handle="{{ product.handle }}">
+          {% if product.featured_image %}
+            <img 
+              src="{{ product.featured_image | img_url: '500x' }}" 
+              alt="{{ product.title | escape }}" 
+              width="{{ product.featured_image.width }}" 
+              height="{{ product.featured_image.height }}">
+          {% else %}
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {% endif %}
+          <h3>{{ product.title }}</h3>
+          <p>{{ product.price | money }}</p>
+          <button class="quick-view-btn" data-handle="{{ product.handle }}">Quick View</button>
+        </div>
       {% endif %}
-      {% if section.settings.banner_subheading != blank %}
-        <p class="banner-subheading">{{ section.settings.banner_subheading }}</p>
-      {% endif %}
-      {% if section.settings.banner_button_label != blank and section.settings.banner_button_link != blank %}
-        <a href="{{ section.settings.banner_button_link }}" class="banner-button">
-          {{ section.settings.banner_button_label }}
-        </a>
-      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="popup-overlay hidden" id="quickViewPopup">
+    <div class="popup-content">
+      <span class="popup-close" role="button" aria-label="Close popup">&times;</span>
+      <div id="popupDetails"></div>
     </div>
   </div>
 </section>
 
 {% schema %}
 {
-  "name": "Custom Banner",
+  "name": "Custom Product Grid",
   "tag": "section",
-  "class": "section-custom-banner",
-  "settings": [
+  "class": "section-custom-grid",
+  "settings": [],
+  "max_blocks": 6,
+  "blocks": [
     {
-      "type": "image_picker",
-      "id": "banner_image",
-      "label": "Banner Image"
-    },
-    {
-      "type": "text",
-      "id": "banner_heading",
-      "label": "Heading",
-      "default": "Your Banner Heading"
-    },
-    {
-      "type": "text",
-      "id": "banner_subheading",
-      "label": "Subheading",
-      "default": "Your Banner Subheading"
-    },
-    {
-      "type": "text",
-      "id": "banner_button_label",
-      "label": "Button Label",
-      "default": "Shop Now"
-    },
-    {
-      "type": "url",
-      "id": "banner_button_link",
-      "label": "Button Link"
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Select Product"
+        }
+      ]
     }
   ],
   "presets": [
     {
-      "name": "Custom Banner",
-      "category": "Custom"
+      "name": "Custom Product Grid",
+      "category": "Custom",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
     }
   ]
 }
