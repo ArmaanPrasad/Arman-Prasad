@@ -1,86 +1,24 @@
-/* ===== Popup overlay & dialog ===== */
-.popup-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+/* Popup styles (from scratch) */
+.c-popup[hidden]{display:none}
+.c-popup{position:fixed;inset:0;z-index:1000}
+.c-popup__overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.c-popup__dialog{
+  position:relative;z-index:1;max-width:980px;margin:4vh auto;background:#fff;
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;border-radius:16px;padding:20px
 }
+.c-popup__close{
+  position:absolute;top:8px;right:10px;border:0;background:transparent;font-size:28px;cursor:pointer
+}
+.c-popup__media img{width:100%;height:auto;border-radius:12px;display:block}
+.c-popup__title{margin:.2rem 0 .3rem;font-size:1.4rem}
+.c-popup__price{font-weight:600;margin:0 0 .5rem}
+.c-popup__desc{opacity:.85;max-height:160px;overflow:auto;margin-bottom:12px}
+.c-popup__options{display:grid;gap:10px;margin-bottom:12px}
+.c-popup__options label{display:block;margin-bottom:4px;font-weight:600}
+.c-popup__options select{width:100%;padding:.55rem .65rem;border-radius:8px;border:1px solid #ddd;background:#fff}
+.c-popup__add{background:#111;color:#fff;border:1px solid #111;border-radius:999px;padding:.7rem 1rem}
+.c-popup__status{margin-left:10px;font-size:.95rem}
 
-/* Toggle visibility */
-.hidden { display: none; }
-
-/* Dialog */
-.popup-content {
-  background: #fff;
-  width: min(600px, 100%);
-  max-height: 90vh;
-  overflow: auto;
-  border-radius: 12px;
-  padding: 20px 24px;
-  position: relative;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-}
-
-/* Close button */
-#popup-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  border: 0;
-  background: transparent;
-  font-size: 20px;
-  cursor: pointer;
-  line-height: 1;
-}
-
-/* Body elements */
-#popup-body h2 {
-  font-size: 22px;
-  margin: 0 0 6px;
-}
-#popup-body p {
-  margin: 8px 0;
-}
-#popup-description {
-  margin: 10px 0 14px;
-}
-#variant-select {
-  width: 100%;
-  padding: 10px;
-  margin: 12px 0 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-/* CTA */
-#add-to-cart {
-  width: 100%;
-  padding: 12px 16px;
-  background: #111111;
-  color: #fff;
-  border: 0;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-#add-to-cart:hover {
-  transform: translateY(-1px);
-}
-
-/* Prevent background scroll when popup open */
-body.no-scroll {
-  overflow: hidden;
-}
-
-/* Mobile tweaks */
-@media (max-width: 768px) {
-  .popup-content {
-    width: 100%;
-    padding: 16px;
-    border-radius: 12px;
-  }
+@media(max-width: 820px){
+  .c-popup__dialog{grid-template-columns:1fr;max-width:92vw}
 }
