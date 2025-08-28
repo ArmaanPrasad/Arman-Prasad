@@ -1,12 +1,20 @@
-<div id="quickViewPopup" class="popup-overlay hidden">
+<div id="quickViewPopup" class="popup-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="quickViewTitle">
   <div class="popup-content">
     <span class="popup-close" role="button" aria-label="Close popup">&times;</span>
     
-    <!-- Product Image -->
-    {{ 'product-1' | placeholder_svg_tag: 'popup-placeholder' }}
+    <!-- Product Image (data URI prevents missing-asset errors; JS can later replace .src) -->
+    <img 
+      id="popupProductImage" 
+      src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" 
+      alt="Product image" 
+      width="500" 
+      height="500" 
+      style="max-width:100%; border-radius:8px; margin-bottom:20px;" />
 
     <!-- Product Title -->
-    <h3 id="popupProductTitle" style="margin-bottom:10px;">Product Title</h3>
+    <h3 id="quickViewTitle" style="margin-bottom:10px;">
+      <span id="popupProductTitle">Product Title</span>
+    </h3>
 
     <!-- Product Price -->
     <p id="popupProductPrice" style="margin-bottom:15px;">₹0.00</p>
