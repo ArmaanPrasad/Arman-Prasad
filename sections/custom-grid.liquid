@@ -36,7 +36,7 @@
                 <button 
                   type="button" 
                   class="grid-quick-view-btn" 
-                  onclick="openProductPopup('{{ product.id }}')">
+                  onclick="openProductPopup('{{ product.handle }}')">
                   Quick View
                 </button>
               </div>
@@ -57,8 +57,8 @@
 <div id="popup-container" class="popup-hidden"></div>
 
 <script>
-  function openProductPopup(productId) {
-    fetch(`/products/${productId}?view=productpopup`)
+  function openProductPopup(handle) {
+    fetch(`/products/${handle}?view=productpopup`)
       .then(response => response.text())
       .then(html => {
         document.getElementById('popup-container').innerHTML = html;
