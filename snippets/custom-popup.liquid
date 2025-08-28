@@ -1,24 +1,30 @@
-<div id="customPopup" class="popup hidden">
+<div id="quickViewPopup" class="popup-overlay hidden">
   <div class="popup-content">
-    <span class="popup-close">&times;</span>
-
+    <span class="popup-close" role="button" aria-label="Close popup">&times;</span>
+    
     <!-- Product Image -->
-    <img id="popupProductImage" 
-         src="{{ 'placeholder.png' | asset_url }}" 
-         alt="Product image" 
-         style="max-width:100%; border-radius:8px; margin-bottom:20px;" />
+    <img 
+      id="popupProductImage" 
+      src="{{ 'placeholder.png' | asset_url }}" 
+      alt="Product image" 
+      width="500" 
+      height="500" 
+      style="max-width:100%; border-radius:8px; margin-bottom:20px;" />
 
-    <!-- Product Info -->
-    <h2 id="popupProductTitle"></h2>
-    <p id="popupProductPrice"></p>
-    <p id="popupProductDescription"></p>
+    <!-- Product Title -->
+    <h3 id="popupProductTitle" style="margin-bottom:10px;">Product Title</h3>
 
-    <!-- Variants -->
-    <div id="popupProductVariants"></div>
+    <!-- Product Price -->
+    <p id="popupProductPrice" style="margin-bottom:15px;">₹0.00</p>
 
-    <!-- Add to Cart -->
-    <button id="popupAddToCartBtn" class="quick-view-btn">
-      Add to Cart
-    </button>
+    <!-- Product Description -->
+    <div id="popupProductDescription" style="margin-bottom:20px;">
+      Product description goes here.
+    </div>
+
+    <!-- View Product Button -->
+    <a id="popupProductLink" href="#" class="popup-button">
+      View Product
+    </a>
   </div>
 </div>
