@@ -1,0 +1,24 @@
+<div id="customPopup" class="popup hidden">
+  <div class="popup-content">
+    <span class="popup-close">&times;</span>
+
+    <!-- Product Image -->
+    <img id="popupProductImage" 
+         src="{{ 'placeholder.png' | asset_url }}" 
+         alt="Product image" 
+         style="max-width:100%; border-radius:8px; margin-bottom:20px;" />
+
+    <!-- Product Info -->
+    <h2 id="popupProductTitle"></h2>
+    <p id="popupProductPrice"></p>
+    <p id="popupProductDescription"></p>
+
+    <!-- Variants -->
+    <div id="popupProductVariants"></div>
+
+    <!-- Add to Cart -->
+    <button id="popupAddToCartBtn" class="quick-view-btn">
+      Add to Cart
+    </button>
+  </div>
+</div>

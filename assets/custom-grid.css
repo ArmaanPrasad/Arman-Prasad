@@ -1,24 +1,70 @@
-/* Popup styles (from scratch) */
-.c-popup[hidden]{display:none}
-.c-popup{position:fixed;inset:0;z-index:1000}
-.c-popup__overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
-.c-popup__dialog{
-  position:relative;z-index:1;max-width:980px;margin:4vh auto;background:#fff;
-  display:grid;grid-template-columns:1fr 1fr;gap:24px;border-radius:16px;padding:20px
+.custom-grid {
+  padding: 60px 20px;
 }
-.c-popup__close{
-  position:absolute;top:8px;right:10px;border:0;background:transparent;font-size:28px;cursor:pointer
+.grid-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
 }
-.c-popup__media img{width:100%;height:auto;border-radius:12px;display:block}
-.c-popup__title{margin:.2rem 0 .3rem;font-size:1.4rem}
-.c-popup__price{font-weight:600;margin:0 0 .5rem}
-.c-popup__desc{opacity:.85;max-height:160px;overflow:auto;margin-bottom:12px}
-.c-popup__options{display:grid;gap:10px;margin-bottom:12px}
-.c-popup__options label{display:block;margin-bottom:4px;font-weight:600}
-.c-popup__options select{width:100%;padding:.55rem .65rem;border-radius:8px;border:1px solid #ddd;background:#fff}
-.c-popup__add{background:#111;color:#fff;border:1px solid #111;border-radius:999px;padding:.7rem 1rem}
-.c-popup__status{margin-left:10px;font-size:.95rem}
+.grid-item {
+  text-align: center;
+  border: 1px solid #eee;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  transition: transform 0.3s ease;
+}
+.grid-item:hover {
+  transform: translateY(-5px);
+}
+.grid-item img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+.quick-view-btn {
+  background: #000;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.quick-view-btn:hover {
+  background: #444;
+}
 
-@media(max-width: 820px){
-  .c-popup__dialog{grid-template-columns:1fr;max-width:92vw}
+/* Popup */
+.popup {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.popup.hidden { display: none; }
+.popup-content {
+  background: #fff;
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  border-radius: 12px;
+  position: relative;
+}
+.popup-close {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid-inner { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .grid-inner { grid-template-columns: 1fr; }
 }
