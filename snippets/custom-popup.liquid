@@ -3,7 +3,7 @@
   <div class="product-popup-box">
     <button class="popup-close">&times;</button>
     <div class="product-popup-content">
-      <!-- AJAX will load product content here -->
+      <!-- Product info injected here -->
     </div>
   </div>
 </div>
@@ -11,145 +11,105 @@
 <style>
 .product-popup {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: none;
-  align-items: center;
-  justify-content: center;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none; align-items: center; justify-content: center;
   z-index: 9999;
 }
-.product-popup.active {
-  display: flex;
-}
+.product-popup.active { display: flex; }
 .product-popup-overlay {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  position: absolute; width: 100%; height: 100%;
   background: rgba(0,0,0,0.5);
 }
 .product-popup-box {
   position: relative;
-  background: #fff;
-  padding: 20px;
-  max-width: 400px;
-  width: 100%;
-  border-radius: 8px;
-  z-index: 10000;
+  background: #fff; padding: 20px;
+  max-width: 500px; width: 100%;
+  border-radius: 8px; z-index: 10000;
 }
 .popup-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; font-size: 22px; cursor: pointer;
 }
 .product-popup-content img {
-  width: 100%;
-  height: auto;
-  margin-bottom: 15px;
-  border-radius: 6px;
+  width: 100%; margin-bottom: 15px; border-radius: 6px;
 }
-.product-popup-content h2 {
-  font-size: 18px;
-  margin-bottom: 5px;
+.product-popup-content h2 { font-size: 20px; margin-bottom: 8px; }
+.product-popup-content .price { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+.product-popup-content .description { font-size: 14px; color: #555; margin-bottom: 12px; }
+.product-popup-content select { width: 100%; padding: 8px; margin-bottom: 12px; }
+.popup-add-to-cart {
+  background: black; color: white;
+  width: 100%; padding: 12px;
+  border: none; cursor: pointer; border-radius: 4px;
 }
-.product-popup-content .price {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-.product-popup-content .description {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 15px;
-}
-.product-popup-content form {
-  margin-top: 10px;
-}
-.product-popup-content select,
-.product-popup-content input[type="radio"] {
-  margin-bottom: 10px;
-}
-.product-popup-content button[type="submit"] {
-  background: black;
-  color: white;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  border-radius: 4px;
-}
-.product-popup-content button[type="submit"]:hover {
-  background: #333;
-}
+.popup-add-to-cart:hover { background: #333; }
 </style>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".quick-view-btn");
   const popup = document.querySelector(".product-popup");
   const popupContent = popup.querySelector(".product-popup-content");
   const closeBtn = popup.querySelector(".popup-close");
 
-  // Quick View open
-  buttons.forEach(btn => {
+  // open quick view
+  document.querySelectorAll(".quick-view-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const handle = btn.getAttribute("data-handle");
       fetch(`/products/${handle}.js`)
         .then(res => res.json())
         .then(product => {
-          // Build popup content dynamically
+          // build popup HTML
           popupContent.innerHTML = `
             <img src="${product.images[0]}" alt="${product.title}">
             <h2>${product.title}</h2>
             <p class="price">₹${(product.price/100).toFixed(2)}</p>
             <p class="description">${product.description}</p>
-
             <form class="popup-cart-form">
               <select class="popup-variants" name="id">
-                ${product.variants.map(v => 
-                  `<option value="${v.id}">${v.title} - ₹${(v.price/100).toFixed(2)}</option>`
+                ${product.variants.map(v =>
+                  `<option value="${v.id}" data-title="${product.title}" data-options="${v.title}">
+                    ${v.title} - ₹${(v.price/100).toFixed(2)}
+                  </option>`
                 ).join("")}
               </select>
               <button type="submit" class="popup-add-to-cart">Add to Cart</button>
             </form>
           `;
 
-          // Hook form submit
+          // add to cart handler
           const form = popupContent.querySelector(".popup-cart-form");
           form.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const variantId = form.querySelector(".popup-variants").value;
+            const variantSelect = form.querySelector(".popup-variants");
+            const variantId = variantSelect.value;
+            const variantOptions = variantSelect.selectedOptions[0].dataset.options;
 
             try {
-              // 1. Add selected product
+              // add main product
               await fetch("/cart/add.js", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: variantId, quantity: 1 })
               });
 
-              // 2. Add Soft Winter Jacket automatically
-              // 👉 replace 'soft-winter-jacket' with actual handle
-              const jacketHandle = "soft-winter-jacket"; 
-              const res = await fetch(`/products/${jacketHandle}.js`);
-              const jacket = await res.json();
-              const jacketVariantId = jacket.variants[0].id;
+              // condition: if variant contains "Black" AND "Medium" → add Soft Winter Jacket
+              if (variantOptions.includes("Black") && variantOptions.includes("Medium")) {
+                const jacketHandle = "soft-winter-jacket"; // 🔥 replace with your actual handle
+                const res = await fetch(`/products/${jacketHandle}.js`);
+                const jacket = await res.json();
+                const jacketVariantId = jacket.variants[0].id;
 
-              await fetch("/cart/add.js", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: jacketVariantId, quantity: 1 })
-              });
+                await fetch("/cart/add.js", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ id: jacketVariantId, quantity: 1 })
+                });
+              }
 
-              alert("Product + Soft Winter Jacket added to cart!");
+              alert("Added to cart successfully!");
             } catch (err) {
-              console.error("Add to cart failed", err);
+              console.error(err);
               alert("Something went wrong, try again!");
             }
           });
@@ -159,12 +119,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Close popup
-  closeBtn.addEventListener("click", () => {
-    popup.classList.remove("active");
-  });
-  popup.querySelector(".product-popup-overlay").addEventListener("click", () => {
-    popup.classList.remove("active");
-  });
+  // close popup
+  closeBtn.addEventListener("click", () => popup.classList.remove("active"));
+  popup.querySelector(".product-popup-overlay").addEventListener("click", () => popup.classList.remove("active"));
 });
 </script>
