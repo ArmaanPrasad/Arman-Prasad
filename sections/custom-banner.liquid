@@ -28,11 +28,45 @@
 </section>
 
 <style>
-/* Button styling stays the same */
+/* Ensure container is relative */
+.banner-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Banner image full width */
+.banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Position text + button at bottom-left with spacing */
+.banner-content {
+  position: absolute;
+  bottom: 40px;  /* push up from bottom */
+  left: 40px;    /* add gap from left */
+  text-align: left;
+  color: black;
+}
+
+/* Heading & Subheading */
+.banner-heading {
+  font-size: 2.5rem;
+  margin: 0 0 10px;
+}
+
+.banner-subheading {
+  font-size: 1.25rem;
+  margin: 0 0 20px;
+}
+
+/* Button styling */
 .banner-button {
   display: inline-block;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #e63946, #d62828);
+  background: linear-gradient(135deg, #000, #333);
   color: #fff;
   font-weight: 600;
   border-radius: 40px;
@@ -43,28 +77,9 @@
 }
 
 .banner-button:hover {
-  background: linear-gradient(135deg, #d62828, #e63946);
+  background: linear-gradient(135deg, #333, #000);
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-}
-
-/* Positioning content at bottom-left */
-.banner-content {
-  position: absolute;
-  bottom: 40px; /* distance from bottom */
-  left: 40px;   /* distance from left */
-  text-align: left;
-  color: black;
-}
-
-.banner-heading {
-  font-size: 2.5rem;
-  margin: 0 0 10px;
-}
-
-.banner-subheading {
-  font-size: 1.25rem;
-  margin: 0 0 20px;
 }
 </style>
 
