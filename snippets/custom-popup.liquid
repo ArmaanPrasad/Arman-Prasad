@@ -1,35 +1,32 @@
+{% comment %}
+Popup modal markup (from scratch)
+- JS fills content dynamically after fetching /products/{handle}.js
+- Accessible keyboard + overlay click close
+{% endcomment %}
 
-<div id="custom-popup" class="popup-overlay hidden">
-  <div class="popup-content">
-    <button id="popup-close">✖</button>
-    <div id="popup-body">
-      <!-- Product details will load here dynamically via JS -->
+<div class="c-popup" data-popup hidden aria-hidden="true">
+  <div class="c-popup__overlay" data-popup-close aria-label="Close"></div>
+
+  <div class="c-popup__dialog" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+    <button class="c-popup__close" type="button" data-popup-close aria-label="Close">×</button>
+
+    <div class="c-popup__media">
+      <img data-popup-image alt="" loading="lazy">
+    </div>
+
+    <div class="c-popup__content">
+      <h2 id="popupTitle" class="c-popup__title" data-popup-title></h2>
+      <p class="c-popup__price" data-popup-price></p>
+      <div class="c-popup__desc" data-popup-desc></div>
+
+      <form class="c-popup__form" data-popup-form>
+        <div class="c-popup__options" data-popup-options></div>
+
+        <div class="c-popup__cta">
+          <button class="c-popup__add" type="submit">Add to cart</button>
+          <span class="c-popup__status" data-popup-status aria-live="polite" aria-atomic="true"></span>
+        </div>
+      </form>
     </div>
   </div>
 </div>
-
-<style>
-  .popup-overlay {
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 1000;
-  }
-  .hidden { display: none; }
-  .popup-content {
-    background: #fff;
-    padding: 20px;
-    max-width: 500px;
-    width: 90%;
-    border-radius: 10px;
-    position: relative;
-  }
-  #popup-close {
-    position: absolute; top: 10px; right: 10px;
-    border: none; background: none; cursor: pointer;
-    font-size: 18px;
-  }
-</style>
-
-<script src="{{ 'custom-popup.js' | asset_url }}" defer></script>
