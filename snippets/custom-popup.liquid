@@ -1,38 +1,90 @@
-<div id="product-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
-  <div style="background:#fff; padding:20px; max-width:500px; width:90%; border-radius:8px; position:relative;">
-    <button onclick="document.getElementById('product-popup').style.display='none'" style="position:absolute; top:10px; right:10px;">X</button>
-    
-    <h2 class="popup-title"></h2>
-    <p class="popup-price"></p>
-    <div class="popup-description" style="margin:10px 0;"></div>
-    
-    <select class="popup-variants" style="margin:12px 0; width:100%; padding:8px;"></select>
-    
-    <button class="popup-add-to-cart" style="margin-top:20px; background:black; color:white; padding:12px 20px; width:100%; border:none; border-radius:4px; cursor:pointer;">
-      Add to Cart
-    </button>
+<div class="product-popup">
+  <div class="product-popup-overlay"></div>
+  <div class="product-popup-box">
+    <button class="popup-close">&times;</button>
+    <div class="product-popup-content">
+      <!-- AJAX will load product content here -->
+    </div>
   </div>
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const popup = document.getElementById("product-popup");
-  const addToCartBtn = popup.querySelector(".popup-add-to-cart");
-
-  addToCartBtn.addEventListener("click", () => {
-    const variantId = popup.querySelector(".popup-variants").value;
-
-    fetch("/cart/add.js", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: variantId, quantity: 1 })
-    })
-    .then(res => res.json())
-    .then(() => {
-      alert("✅ Product added to cart!");
-      popup.style.display = "none";
-    })
-    .catch(err => console.error("Cart error:", err));
-  });
-});
-</script>
+<style>
+.product-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.product-popup.active {
+  display: flex;
+}
+.product-popup-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+.product-popup-box {
+  position: relative;
+  background: #fff;
+  padding: 20px;
+  max-width: 400px;
+  width: 100%;
+  border-radius: 8px;
+  z-index: 10000;
+}
+.popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+.product-popup-content img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 15px;
+  border-radius: 6px;
+}
+.product-popup-content h2 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+.product-popup-content .price {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.product-popup-content .description {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 15px;
+}
+.product-popup-content form {
+  margin-top: 10px;
+}
+.product-popup-content select,
+.product-popup-content input[type="radio"] {
+  margin-bottom: 10px;
+}
+.product-popup-content button[type="submit"] {
+  background: black;
+  color: white;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+}
+.product-popup-content button[type="submit"]:hover {
+  background: #333;
+}
+</style>
