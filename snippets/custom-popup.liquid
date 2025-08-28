@@ -88,3 +88,83 @@
   background: #333;
 }
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll(".quick-view-btn");
+  const popup = document.querySelector(".product-popup");
+  const popupContent = popup.querySelector(".product-popup-content");
+  const closeBtn = popup.querySelector(".popup-close");
+
+  // Quick View open
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const handle = btn.getAttribute("data-handle");
+      fetch(`/products/${handle}.js`)
+        .then(res => res.json())
+        .then(product => {
+          // Build popup content dynamically
+          popupContent.innerHTML = `
+            <img src="${product.images[0]}" alt="${product.title}">
+            <h2>${product.title}</h2>
+            <p class="price">₹${(product.price/100).toFixed(2)}</p>
+            <p class="description">${product.description}</p>
+
+            <form class="popup-cart-form">
+              <select class="popup-variants" name="id">
+                ${product.variants.map(v => 
+                  `<option value="${v.id}">${v.title} - ₹${(v.price/100).toFixed(2)}</option>`
+                ).join("")}
+              </select>
+              <button type="submit" class="popup-add-to-cart">Add to Cart</button>
+            </form>
+          `;
+
+          // Hook form submit
+          const form = popupContent.querySelector(".popup-cart-form");
+          form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const variantId = form.querySelector(".popup-variants").value;
+
+            try {
+              // 1. Add selected product
+              await fetch("/cart/add.js", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: variantId, quantity: 1 })
+              });
+
+              // 2. Add Soft Winter Jacket automatically
+              // 👉 replace 'soft-winter-jacket' with actual handle
+              const jacketHandle = "soft-winter-jacket"; 
+              const res = await fetch(`/products/${jacketHandle}.js`);
+              const jacket = await res.json();
+              const jacketVariantId = jacket.variants[0].id;
+
+              await fetch("/cart/add.js", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: jacketVariantId, quantity: 1 })
+              });
+
+              alert("Product + Soft Winter Jacket added to cart!");
+            } catch (err) {
+              console.error("Add to cart failed", err);
+              alert("Something went wrong, try again!");
+            }
+          });
+
+          popup.classList.add("active");
+        });
+    });
+  });
+
+  // Close popup
+  closeBtn.addEventListener("click", () => {
+    popup.classList.remove("active");
+  });
+  popup.querySelector(".product-popup-overlay").addEventListener("click", () => {
+    popup.classList.remove("active");
+  });
+});
+</script>
