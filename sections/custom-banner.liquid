@@ -28,27 +28,26 @@
 </section>
 
 <style>
-/* Ensure container is relative */
 .banner-inner {
   position: relative;
   width: 100%;
-  height: 100%;
 }
 
-/* Banner image full width */
+/* Image fills width */
 .banner-image {
   width: 100%;
   height: auto;
   display: block;
 }
 
-/* Position text + button at bottom-left with spacing */
+/* Text & button on top of image */
 .banner-content {
   position: absolute;
-  bottom: 40px;  /* push up from bottom */
-  left: 40px;    /* add gap from left */
-  text-align: left;
+  bottom: 40px;  /* move up from bottom */
+  left: 40px;    /* small gap from left */
+  z-index: 2;    /* keep on top of image */
   color: black;
+  text-align: left;
 }
 
 /* Heading & Subheading */
@@ -62,7 +61,7 @@
   margin: 0 0 20px;
 }
 
-/* Button styling */
+/* Button */
 .banner-button {
   display: inline-block;
   padding: 14px 32px;
