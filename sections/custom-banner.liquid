@@ -2,7 +2,7 @@
   <div class="banner-inner">
     {% if section.settings.banner_image != blank %}
       <img 
-        src="{{ section.settings.banner_image | image_url: width: 1600 }}" 
+        src="{{ section.settings.banner_image | image_url: '1600x' }}" 
         alt="{{ section.settings.banner_heading | escape }}" 
         class="banner-image"
         width="{{ section.settings.banner_image.width }}"
@@ -28,6 +28,7 @@
 </section>
 
 <style>
+/* Only styling the button — banner layout untouched */
 .banner-button {
   display: inline-block;
   padding: 14px 32px;
