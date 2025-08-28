@@ -1,8 +1,8 @@
 {% comment %}
 Custom Grid Section
-- Lets merchant pick up to 6 products
+- Merchant can select up to 6 products
 - Displays product image, title, price
-- Click → opens popup
+- Clicking a product can trigger popup (wired via JS)
 {% endcomment %}
 
 <section class="custom-grid">
@@ -13,7 +13,7 @@ Custom Grid Section
         <div class="grid-item" data-handle="{{ product.handle }}">
           {% if product.featured_image %}
             <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
-          {% elsif product.images.size > 0 %}
+          {% elsif product.images and product.images.size > 0 %}
             <img src="{{ product.images[0] | image_url: width: 400 }}" alt="{{ product.title }}">
           {% else %}
             <img src="{{ 'placeholder-image.png' | asset_url }}" alt="No image available">
@@ -63,13 +63,20 @@ Custom Grid Section
       "type": "product",
       "name": "Product",
       "settings": [
-        { "type": "product", "id": "product", "label": "Select product" }
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Select product"
+        }
       ]
     }
   ],
   "max_blocks": 6,
   "presets": [
-    { "name": "Custom Grid", "category": "Products" }
+    {
+      "name": "Custom Grid",
+      "category": "Products"
+    }
   ]
 }
 {% endschema %}
