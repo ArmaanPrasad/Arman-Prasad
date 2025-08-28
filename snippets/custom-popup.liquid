@@ -1,32 +1,38 @@
 <div id="product-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
   <div style="background:#fff; padding:20px; max-width:500px; width:90%; border-radius:8px; position:relative;">
     <button onclick="document.getElementById('product-popup').style.display='none'" style="position:absolute; top:10px; right:10px;">X</button>
+    
     <h2 class="popup-title"></h2>
     <p class="popup-price"></p>
-    <div class="popup-description"></div>
-    <select class="popup-variants"></select>
-    <button class="popup-add-to-cart">Add to Cart</button>
+    <div class="popup-description" style="margin:10px 0;"></div>
+    
+    <select class="popup-variants" style="margin:12px 0; width:100%; padding:8px;"></select>
+    
+    <button class="popup-add-to-cart" style="margin-top:20px; background:black; color:white; padding:12px 20px; width:100%; border:none; border-radius:4px; cursor:pointer;">
+      Add to Cart
+    </button>
   </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const addToCartBtn = document.querySelector(".popup-add-to-cart");
+  const popup = document.getElementById("product-popup");
+  const addToCartBtn = popup.querySelector(".popup-add-to-cart");
+
   addToCartBtn.addEventListener("click", () => {
-    const popup = document.getElementById("product-popup");
     const variantId = popup.querySelector(".popup-variants").value;
+
     fetch("/cart/add.js", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: variantId, quantity: 1 })
     })
     .then(res => res.json())
     .then(() => {
-      alert("Product added to cart!");
+      alert("✅ Product added to cart!");
       popup.style.display = "none";
-    });
+    })
+    .catch(err => console.error("Cart error:", err));
   });
 });
 </script>
