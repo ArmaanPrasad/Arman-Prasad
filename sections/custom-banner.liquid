@@ -28,49 +28,11 @@
 </section>
 
 <style>
-/* Banner styles */
-.custom-banner {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-.banner-inner {
-  position: relative;
-  width: 100%;
-}
-
-.banner-image {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.banner-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: #000;
-}
-
-.banner-heading {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.banner-subheading {
-  font-size: 1.25rem;
-  margin-bottom: 20px;
-}
-
-/* Button styling */
+/* Button styling stays the same */
 .banner-button {
   display: inline-block;
   padding: 14px 32px;
-  background: #000;
+  background: linear-gradient(135deg, #e63946, #d62828);
   color: #fff;
   font-weight: 600;
   border-radius: 40px;
@@ -81,9 +43,28 @@
 }
 
 .banner-button:hover {
-  background: #333;
+  background: linear-gradient(135deg, #d62828, #e63946);
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Positioning content at bottom-left */
+.banner-content {
+  position: absolute;
+  bottom: 40px; /* distance from bottom */
+  left: 40px;   /* distance from left */
+  text-align: left;
+  color: black;
+}
+
+.banner-heading {
+  font-size: 2.5rem;
+  margin: 0 0 10px;
+}
+
+.banner-subheading {
+  font-size: 1.25rem;
+  margin: 0 0 20px;
 }
 </style>
 
