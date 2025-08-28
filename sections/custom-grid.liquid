@@ -1,26 +1,23 @@
 <section class="custom-grid">
-  <div class="custom-grid-inner">
+  <div class="grid-inner">
     {% if section.settings.collection != blank %}
-      {% assign grid_collection = collections[section.settings.collection] %}
-      {% if grid_collection.products_count > 0 %}
-        <div class="product-grid">
-          {% for product in grid_collection.products %}
-            <div class="product-item">
-              <a href="{{ product.url }}">
-                {% if product.featured_image %}
-                  <img src="{{ product.featured_image | image_url: '400x' }}" alt="{{ product.title | escape }}">
-                {% else %}
-                  {{ 'product-1' | placeholder_svg_tag: 'product-placeholder' }}
-                {% endif %}
-                <h3>{{ product.title }}</h3>
-                <p>{{ product.price | money }}</p>
-              </a>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p>No products found in this collection.</p>
-      {% endif %}
+      <div class="product-grid">
+        {% for product in collections[section.settings.collection].products %}
+          <div class="product-card">
+            <a href="{{ product.url }}">
+              {% if product.featured_image %}
+                <img src="{{ product.featured_image | image_url: '400x' }}" alt="{{ product.title }}">
+              {% else %}
+                {{ 'product-1' | placeholder_svg_tag }}
+              {% endif %}
+              <h3>{{ product.title }}</h3>
+              <p>{{ product.price | money }}</p>
+            </a>
+          </div>
+        {% else %}
+          <p>No products found in this collection.</p>
+        {% endfor %}
+      </div>
     {% else %}
       <p>Please select a collection in the section settings.</p>
     {% endif %}
@@ -28,50 +25,39 @@
 </section>
 
 <style>
-.custom-grid {
-  padding: 60px 20px;
-}
-
-.product-grid {
+.custom-grid .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 20px;
 }
-
-.product-item {
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
   text-align: center;
+  transition: all .3s ease;
 }
-
-.product-item img {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  transition: transform 0.3s ease;
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
 }
-
-.product-item img:hover {
-  transform: scale(1.05);
+.product-card img {
+  max-width: 100%; height: auto; margin-bottom: 10px;
 }
-
-.product-item h3 {
-  font-size: 1.1rem;
-  margin: 10px 0 5px;
-}
-
-.product-item p {
-  font-weight: 600;
-  color: #333;
-}
+.product-card h3 { font-size: 16px; font-weight: bold; }
+.product-card p { font-size: 14px; color: #555; }
 </style>
 
 {% schema %}
 {
   "name": "Custom Product Grid",
+  "tag": "section",
+  "class": "section-custom-grid",
   "settings": [
     {
       "type": "collection",
       "id": "collection",
-      "label": "Select Collection"
+      "label": "Select collection"
     }
   ],
   "presets": [
