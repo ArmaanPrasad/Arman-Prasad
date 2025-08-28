@@ -32,9 +32,9 @@
 .custom-banner {
   position: relative;
   width: 100%;
-  min-height: 80vh; /* increase section height */
+  min-height: 80vh;
   display: flex;
-  align-items: flex-end; /* content at bottom */
+  align-items: flex-end;
   justify-content: center;
   overflow: hidden;
 }
@@ -59,14 +59,14 @@
   position: relative;
   z-index: 2;
   text-align: left;
-  color: #000; /* text black */
-  margin: 0 0 50px 60px; /* spacing from bottom + left */
+  color: #000;
+  margin: 0 0 50px 60px;
 }
 
 .banner-heading {
-  font-size: 3rem; /* bigger */
-  font-weight: 800; /* extra bold */
-  color: #111; /* darker */
+  font-size: 3rem;
+  font-weight: 800;
+  color: #111;
   margin-bottom: 10px;
 }
 
@@ -94,6 +94,56 @@
   background: #333;
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* 🔹 Responsive adjustments */
+@media (max-width: 992px) {
+  .banner-heading {
+    font-size: 2.2rem;
+  }
+  .banner-subheading {
+    font-size: 1.1rem;
+  }
+  .banner-content {
+    margin: 0 0 40px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-banner {
+    min-height: 60vh;
+    align-items: center;
+  }
+  .banner-content {
+    margin: 0 20px;
+    text-align: center;
+  }
+  .banner-heading {
+    font-size: 1.8rem;
+  }
+  .banner-subheading {
+    font-size: 1rem;
+  }
+  .banner-button {
+    padding: 12px 28px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-banner {
+    min-height: 50vh;
+  }
+  .banner-heading {
+    font-size: 1.5rem;
+  }
+  .banner-subheading {
+    font-size: 0.9rem;
+  }
+  .banner-button {
+    padding: 10px 24px;
+    font-size: 0.85rem;
+  }
 }
 </style>
 
