@@ -1,69 +1,66 @@
-<div id="custom-popup" class="custom-popup">
-  <div class="popup-overlay"></div>
+<div id="product-popup" class="popup-overlay">
   <div class="popup-content">
-    {% if popup_heading %}
-      <h2 class="popup-heading">{{ popup_heading }}</h2>
-    {% endif %}
-    {% if popup_text %}
-      <p class="popup-text">{{ popup_text }}</p>
-    {% endif %}
-    {% if popup_button_label and popup_button_link %}
-      <a href="{{ popup_button_link }}" class="popup-button">{{ popup_button_label }}</a>
-    {% endif %}
-    <button class="popup-close">&times;</button>
+    <span class="popup-close">&times;</span>
+    <div id="popup-body">
+      <!-- Product details will load here -->
+    </div>
   </div>
 </div>
 
 <style>
-.custom-popup {
+.popup-overlay {
   display: none;
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
   z-index: 9999;
 }
-.custom-popup.active { display: block; }
-.popup-overlay {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
-}
 .popup-content {
-  position: relative;
   background: #fff;
-  max-width: 500px;
-  margin: 10% auto;
   padding: 20px;
-  border-radius: 10px;
-  text-align: center;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 600px;
+  position: relative;
 }
-.popup-heading { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-.popup-text { font-size: 16px; margin-bottom: 20px; }
-.popup-button {
-  display: inline-block;
-  padding: 12px 28px;
-  background: black; color: white;
-  border-radius: 30px; text-decoration: none;
-  transition: all .3s ease;
-}
-.popup-button:hover { background: #333; transform: scale(1.05); }
 .popup-close {
-  position: absolute; top: 10px; right: 10px;
-  background: transparent; border: none;
-  font-size: 22px; cursor: pointer;
+  position: absolute;
+  top: 10px; right: 20px;
+  font-size: 24px;
+  cursor: pointer;
 }
 </style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const popup = document.getElementById("custom-popup");
-  const closeBtn = popup?.querySelector(".popup-close");
-  const overlay = popup?.querySelector(".popup-overlay");
+  const popup = document.getElementById("product-popup");
+  const popupBody = document.getElementById("popup-body");
+  const closeBtn = document.querySelector(".popup-close");
 
-  // Example: show popup after 3s
-  setTimeout(() => popup?.classList.add("active"), 3000);
+  document.querySelectorAll(".product-link").forEach(link => {
+    link.addEventListener("click", function() {
+      const handle = this.getAttribute("data-handle");
 
-  closeBtn?.addEventListener("click", () => popup.classList.remove("active"));
-  overlay?.addEventListener("click", () => popup.classList.remove("active"));
+      fetch(`/products/${handle}?view=popup`)
+        .then(res => res.text())
+        .then(html => {
+          popupBody.innerHTML = html;
+          popup.style.display = "flex";
+        });
+    });
+  });
+
+  closeBtn.addEventListener("click", function() {
+    popup.style.display = "none";
+  });
+
+  window.addEventListener("click", function(e) {
+    if (e.target === popup) {
+      popup.style.display = "none";
+    }
+  });
 });
 </script>
