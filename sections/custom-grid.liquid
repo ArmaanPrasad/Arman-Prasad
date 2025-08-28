@@ -1,149 +1,101 @@
-<section class="custom-grid">
-  <div class="custom-grid-inner">
-    {% if section.settings.collection != blank %}
-      {% assign grid_collection = collections[section.settings.collection] %}
-      
-      {% if grid_collection.products_count > 0 %}
-        <div class="grid-products">
-          {% for product in grid_collection.products limit: 6 %}
-            <div class="grid-product-card">
-              
-              <!-- Product Image -->
-              <a href="{{ product.url }}">
-                {% if product.featured_image %}
-                  <img 
-                    src="{{ product.featured_image | image_url: '400x' }}" 
-                    alt="{{ product.title }}" 
-                    width="{{ product.featured_image.width }}"
-                    height="{{ product.featured_image.height }}"
-                    class="grid-product-image">
-                {% else %}
-                  {{ 'product-1' | placeholder_svg_tag }}
-                {% endif %}
-              </a>
-
-              <!-- Product Info -->
-              <h3 class="grid-product-title">{{ product.title }}</h3>
-              <p class="grid-product-price">{{ product.price | money }}</p>
-
-              <!-- Buttons -->
-              <div class="grid-product-actions">
-                <form method="post" action="{{ routes.cart_add_url }}">
-                  <input type="hidden" name="id" value="{{ product.variants.first.id }}">
-                  <button type="submit" class="grid-add-btn">Add to Cart</button>
-                </form>
-
-                <button 
-                  type="button" 
-                  class="grid-quick-view-btn" 
-                  onclick="openProductPopup('{{ product.handle }}')">
-                  Quick View
-                </button>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p>No products found in this collection.</p>
-      {% endif %}
-
-    {% else %}
-      <p>Please select a collection in the section settings.</p>
-    {% endif %}
-  </div>
-</section>
-
-<!-- Popup container -->
-<div id="popup-container" class="popup-hidden"></div>
-
-<script>
-  function openProductPopup(handle) {
-    fetch(`/products/${handle}?view=productpopup`)
-      .then(response => response.text())
-      .then(html => {
-        document.getElementById('popup-container').innerHTML = html;
-        document.getElementById('popup-container').classList.remove('popup-hidden');
-      });
-  }
-</script>
-
-<style>
-.custom-grid {
-  padding: 40px 20px;
-}
-.grid-products {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.grid-product-card {
-  border: 1px solid #eee;
-  padding: 16px;
-  border-radius: 8px;
-  text-align: center;
-}
-.grid-product-image {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-}
-.grid-product-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 12px 0 4px;
-}
-.grid-product-price {
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 12px;
-}
-.grid-product-actions {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-.grid-add-btn,
-.grid-quick-view-btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.grid-add-btn {
-  background: black;
-  color: white;
-}
-.grid-add-btn:hover {
-  background: #333;
-}
-.grid-quick-view-btn {
-  background: #eee;
-  color: #111;
-}
-.grid-quick-view-btn:hover {
-  background: #ddd;
-}
-#popup-container.popup-hidden {
-  display: none;
-}
-</style>
-
 {% schema %}
 {
   "name": "Custom Product Grid",
-  "settings": [
+  "settings": [],
+  "blocks": [
     {
-      "type": "collection",
-      "id": "collection",
-      "label": "Select Collection"
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Select product"
+        }
+      ]
     }
   ],
+  "max_blocks": 6,
   "presets": [
     {
-      "name": "Custom Grid",
-      "category": "Custom"
+      "name": "Custom Product Grid"
     }
   ]
 }
 {% endschema %}
+
+<div class="custom-grid">
+  {% for block in section.blocks %}
+    {% assign product = all_products[block.settings.product] %}
+    {% if product %}
+      <div class="grid-item">
+        <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
+        <h3>{{ product.title }}</h3>
+        <p>{{ product.price | money }}</p>
+        <button class="quick-view-btn" data-handle="{{ product.handle }}">Quick View</button>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<div id="popup-container" class="popup-container" style="display:none;">
+  <div class="popup-content"></div>
+</div>
+
+<style>
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.grid-item {
+  text-align: center;
+}
+.popup-container {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+@media (max-width: 768px) {
+  .custom-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll(".quick-view-btn");
+  const popup = document.getElementById("popup-container");
+  const content = popup.querySelector(".popup-content");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const handle = btn.dataset.handle;
+      const res = await fetch(`/products/${handle}?view=productpopup`);
+      const html = await res.text();
+      content.innerHTML = html;
+      popup.style.display = "flex";
+    });
+  });
+
+  popup.addEventListener("click", (e) => {
+    if (e.target === popup) {
+      popup.style.display = "none";
+      content.innerHTML = "";
+    }
+  });
+});
+</script>
