@@ -1,61 +1,72 @@
 {% comment %}
-Custom Grid Section
-- Lets merchant pick 6 products
-- Displays product image, title, price
-- Click → opens popup
+Custom Product Grid (from scratch)
+- Exactly up to 6 product blocks selected in Theme Editor
+- Click item → opens popup (snippets/custom-popup.liquid) with dynamic product data
+- Includes assets/custom-popup.css + assets/custom-popup.js
+- Implements special rule via data-* (Black + Medium ⇒ auto-add bonus product)
 {% endcomment %}
 
-<section class="custom-grid">
-  <div class="grid-container">
+<section class="c-grid section-{{ section.id }}"
+  data-bonus-handle="{{ section.settings.bonus_product | default: '' | handle }}"
+  data-trigger-color="{{ section.settings.trigger_color | default: 'Black' }}"
+  data-trigger-size="{{ section.settings.trigger_size | default: 'Medium' }}"
+>
+  <div class="c-grid__container">
     {% for block in section.blocks %}
       {% assign product = all_products[block.settings.product] %}
       {% if product %}
-        <div class="grid-item" data-handle="{{ product.handle }}">
+        <article class="c-grid__item" data-handle="{{ product.handle }}" {{ block.shopify_attributes }}>
           {% if product.featured_image %}
-            <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
-          {% elsif product.images.size > 0 %}
-            <img src="{{ product.images[0] | image_url: width: 400 }}" alt="{{ product.title }}">
+            <img class="c-grid__img" src="{{ product.featured_image | image_url: width: 600 }}" alt="{{ product.title }}">
+          {% elsif product.images and product.images.size > 0 %}
+            <img class="c-grid__img" src="{{ product.images[0] | image_url: width: 600 }}" alt="{{ product.title }}">
           {% else %}
-            <img src="{{ 'placeholder-image.png' | asset_url }}" alt="No image available">
+            <img class="c-grid__img" src="{{ 'placeholder-image.png' | asset_url }}" alt="No image available">
           {% endif %}
-
-          <h3>{{ product.title }}</h3>
-          <p>{{ product.price | money }}</p>
-        </div>
+          <h3 class="c-grid__title">{{ product.title }}</h3>
+          <p class="c-grid__price">{% render 'price', product: product %}</p>
+          <button class="c-grid__btn" type="button" aria-label="Quick view {{ product.title }}">Quick view</button>
+        </article>
       {% endif %}
     {% endfor %}
   </div>
 
-  {% render 'custom-popup' %}
+  {%- render 'custom-popup' -%}
+
+  <link rel="stylesheet" href="{{ 'custom-popup.css' | asset_url }}">
+  <script src="{{ 'custom-popup.js' | asset_url }}" defer></script>
 </section>
 
 <style>
-  .custom-grid .grid-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .grid-item {
-    cursor: pointer;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    text-align: center;
-    transition: all 0.2s ease;
-  }
-  .grid-item:hover { transform: translateY(-3px); }
-  @media(max-width: 768px) {
-    .custom-grid .grid-container { grid-template-columns: 1fr 1fr; }
-  }
+.section-{{ section.id }} .c-grid__container{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px
+}
+.section-{{ section.id }} .c-grid__item{
+  border:1px solid #eee;border-radius:12px;padding:14px;text-align:center;
+  transition:transform .18s ease, box-shadow .18s ease;cursor:pointer;background:#fff
+}
+.section-{{ section.id }} .c-grid__item:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.section-{{ section.id }} .c-grid__img{width:100%;height:auto;display:block;border-radius:10px;margin-bottom:10px}
+.section-{{ section.id }} .c-grid__title{font-size:1rem;margin:.35rem 0}
+.section-{{ section.id }} .c-grid__price{opacity:.9;margin:0 0 .5rem}
+.section-{{ section.id }} .c-grid__btn{border:1px solid #111;background:#111;color:#fff;padding:.55rem .9rem;border-radius:999px}
+@media(max-width: 900px){.section-{{ section.id }} .c-grid__container{grid-template-columns:repeat(2,1fr)}}
+@media(max-width: 540px){.section-{{ section.id }} .c-grid__container{grid-template-columns:1fr}}
 </style>
 
 {% schema %}
 {
   "name": "Custom Product Grid",
+  "settings": [
+    { "type": "product", "id": "bonus_product", "label": "Bonus product (Soft Winter Jacket)" },
+    { "type": "text", "id": "trigger_color", "label": "Trigger color value", "default": "Black" },
+    { "type": "text", "id": "trigger_size", "label": "Trigger size value", "default": "Medium" }
+  ],
   "blocks": [
     {
       "type": "product",
       "name": "Product",
+      "limit": 6,
       "settings": [
         { "type": "product", "id": "product", "label": "Select product" }
       ]
@@ -63,7 +74,7 @@ Custom Grid Section
   ],
   "max_blocks": 6,
   "presets": [
-    { "name": "Custom Grid", "category": "Products" }
+    { "name": "Custom Grid", "category": "Custom" }
   ]
 }
 {% endschema %}
