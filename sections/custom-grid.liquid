@@ -1,8 +1,8 @@
 {% comment %}
 Custom Grid Section
-- Merchant can select up to 6 products
+- Lets merchant pick 6 products
 - Displays product image, title, price
-- Clicking a product can trigger popup (wired via JS)
+- Click → opens popup
 {% endcomment %}
 
 <section class="custom-grid">
@@ -13,7 +13,7 @@ Custom Grid Section
         <div class="grid-item" data-handle="{{ product.handle }}">
           {% if product.featured_image %}
             <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
-          {% elsif product.images and product.images.size > 0 %}
+          {% elsif product.images.size > 0 %}
             <img src="{{ product.images[0] | image_url: width: 400 }}" alt="{{ product.title }}">
           {% else %}
             <img src="{{ 'placeholder-image.png' | asset_url }}" alt="No image available">
@@ -26,7 +26,7 @@ Custom Grid Section
     {% endfor %}
   </div>
 
-  {%- render 'custom-popup' -%}
+  {% render 'custom-popup' %}
 </section>
 
 <style>
@@ -43,15 +43,9 @@ Custom Grid Section
     text-align: center;
     transition: all 0.2s ease;
   }
-  .grid-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0,0,0,.08);
-  }
+  .grid-item:hover { transform: translateY(-3px); }
   @media(max-width: 768px) {
     .custom-grid .grid-container { grid-template-columns: 1fr 1fr; }
-  }
-  @media(max-width: 480px) {
-    .custom-grid .grid-container { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -63,20 +57,13 @@ Custom Grid Section
       "type": "product",
       "name": "Product",
       "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Select product"
-        }
+        { "type": "product", "id": "product", "label": "Select product" }
       ]
     }
   ],
   "max_blocks": 6,
   "presets": [
-    {
-      "name": "Custom Grid",
-      "category": "Products"
-    }
+    { "name": "Custom Grid", "category": "Products" }
   ]
 }
 {% endschema %}
