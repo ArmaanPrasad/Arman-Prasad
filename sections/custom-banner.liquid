@@ -28,45 +28,105 @@
 </section>
 
 <style>
+/* Banner styles */
 .custom-banner {
   position: relative;
   width: 100%;
-  height: 100vh; /* Full screen height */
   overflow: hidden;
 }
 
 .banner-inner {
   position: relative;
   width: 100%;
-  height: 100%;
 }
 
 .banner-image {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
 }
 
 .banner-content {
   position: absolute;
-  bottom: 40px; /* Distance from bottom */
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   text-align: center;
-  color: black;
+  color: #000;
 }
 
 .banner-heading {
-  font-size: 3rem;
-  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
 .banner-subheading {
   font-size: 1.25rem;
-  margin: 0 0 20px 0;
+  margin-bottom: 20px;
 }
 
+/* Button styling */
 .banner-button {
   display: inline-block;
-  padding: 12px 30px;
-  backgroun
+  padding: 14px 32px;
+  background: #000;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 40px;
+  text-decoration: none;
+  transition: all 0.35s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  letter-spacing: 0.5px;
+}
+
+.banner-button:hover {
+  background: #333;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+</style>
+
+{% schema %}
+{
+  "name": "Custom Banner",
+  "tag": "section",
+  "class": "section-custom-banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "banner_image",
+      "label": "Banner Image"
+    },
+    {
+      "type": "text",
+      "id": "banner_heading",
+      "label": "Heading",
+      "default": "Your Banner Heading"
+    },
+    {
+      "type": "text",
+      "id": "banner_subheading",
+      "label": "Subheading",
+      "default": "Your Banner Subheading"
+    },
+    {
+      "type": "text",
+      "id": "banner_button_label",
+      "label": "Button Label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "banner_button_link",
+      "label": "Button Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Banner",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
