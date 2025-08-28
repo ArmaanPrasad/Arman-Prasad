@@ -1,56 +1,95 @@
-<div class="custom-grid">
-  {% for block in section.blocks %}
-    {% if block.settings.product != blank %}
-      {% assign product = all_products[block.settings.product] %}
-      <div class="grid-item">
-        <img 
-          src="{{ product.featured_image | image_url: width: 400 }}" 
-          alt="{{ product.title }}" 
-          width="400" height="400">
-        <h3>{{ product.title }}</h3>
-        <p>{{ product.price | money }}</p>
-        <button class="quick-view-btn" data-handle="{{ product.handle }}">Quick View</button>
-      </div>
-    {% endif %}
-  {% endfor %}
-</div>
+<section class="custom-grid">
+  <div class="grid-wrap">
+    {% for block in section.blocks %}
+      {% assign product = block.settings.product %}
+      <div class="grid-card" {{ block.shopify_attributes }}>
+        {% if product %}
+          <a href="{{ product.url }}" class="grid-image-link">
+            {% if product.featured_image %}
+              {{ product.featured_image
+                | image_url: width: 600
+                | image_tag: alt: product.title, class: 'grid-image', loading: 'lazy' }}
+            {% else %}
+              {{ 'product-1' | placeholder_svg_tag: 'grid-image placeholder-svg' }}
+            {% endif %}
+          </a>
 
-{% render 'product-popup' %}
+          <h3 class="grid-title">{{ product.title }}</h3>
+          <p class="grid-price">{{ product.price | money }}</p>
+
+          <div class="grid-actions">
+            <form method="post" action="{{ routes.cart_add_url }}">
+              <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+              <button type="submit" class="btn add-btn">Add to Cart</button>
+            </form>
+
+            <button
+              type="button"
+              class="btn quick-view-btn"
+              data-handle="{{ product.handle }}">
+              Quick View
+            </button>
+          </div>
+        {% else %}
+          <div class="grid-placeholder">
+            {{ 'product-1' | placeholder_svg_tag: 'grid-image placeholder-svg' }}
+            <h3 class="grid-title">Select a product</h3>
+            <p class="grid-hint">Add a product in the section settings.</p>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {% render 'product-popup' %}
+</section>
 
 <style>
-.custom-grid {
+.custom-grid { padding: 32px 16px; }
+.grid-wrap {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, minmax(0,1fr));
   gap: 24px;
 }
-.grid-item {
+.grid-card {
+  background: #fff;
   border: 1px solid #eee;
+  border-radius: 10px;
   padding: 16px;
-  text-align: center;
-  border-radius: 8px;
-  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
-.grid-item img { width:100%; border-radius:8px; margin-bottom:12px; }
-.grid-item h3 { font-size: 18px; margin-bottom: 8px; }
-.grid-item p { font-weight: 600; color: #333; }
-.quick-view-btn {
-  padding: 8px 16px;
+.grid-image { width: 100%; height: auto; border-radius: 8px; display: block; }
+.grid-title { margin: 12px 0 6px; font-size: 18px; font-weight: 600; }
+.grid-price { margin: 0 0 12px; color: #333; font-weight: 600; }
+.grid-actions { margin-top: auto; display: flex; gap: 10px; }
+.btn {
+  padding: 10px 14px;
   border: none;
-  background: black;
-  color: white;
   border-radius: 6px;
   cursor: pointer;
 }
-.quick-view-btn:hover { background: #333; }
-@media(max-width:768px){
-  .custom-grid { grid-template-columns: 1fr 1fr; }
+.add-btn { background: #000; color: #fff; }
+.add-btn:hover { background: #333; }
+.quick-view-btn { background: #eee; color: #111; }
+.quick-view-btn:hover { background: #ddd; }
+.grid-placeholder { text-align: center; color: #777; }
+.grid-hint { font-size: 12px; margin-top: 6px; }
+
+@media (max-width: 900px) {
+  .grid-wrap { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 520px) {
+  .grid-wrap { grid-template-columns: 1fr; }
 }
 </style>
 
 {% schema %}
 {
-  "name": "Custom Grid",
+  "name": "Custom Product Grid",
   "max_blocks": 6,
+  "settings": [],
   "blocks": [
     {
       "type": "product",
@@ -66,7 +105,7 @@
   ],
   "presets": [
     {
-      "name": "Custom Grid",
+      "name": "Custom Product Grid",
       "blocks": [
         { "type": "product" },
         { "type": "product" },
