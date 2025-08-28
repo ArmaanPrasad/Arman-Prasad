@@ -49,11 +49,6 @@
           data-handle="{{ product.handle }}">
           Quick View
         </button>
-
-        <form method="post" action="/cart/add" class="add-to-cart-form">
-          <input type="hidden" name="id" value="{{ product.variants.first.id }}">
-          <button type="submit" class="add-to-cart-btn">Add to Cart</button>
-        </form>
       </div>
     {% endif %}
   {% endfor %}
@@ -67,10 +62,7 @@
     <p class="popup-price"></p>
     <div class="popup-description"></div>
     <select class="popup-variants"></select>
-    <form method="post" action="/cart/add" class="popup-cart-form">
-      <input type="hidden" name="id" class="popup-variant-id">
-      <button type="submit" class="popup-add-to-cart">Add to Cart</button>
-    </form>
+    <button class="popup-add-to-cart">Add to Cart</button>
   </div>
 </div>
 
@@ -104,26 +96,17 @@
   color: #555;
   margin-bottom: 15px;
 }
-.quick-view-btn,
-.add-to-cart-btn {
+.quick-view-btn {
   display: block;
   width: 100%;
   padding: 10px 15px;
   border: none;
   border-radius: 4px;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-.quick-view-btn {
   background: black;
   color: white;
+  cursor: pointer;
 }
 .quick-view-btn:hover { background: #333; }
-.add-to-cart-btn {
-  background: #007aff;
-  color: #fff;
-}
-.add-to-cart-btn:hover { background: #005bb5; }
 
 /* Popup styling */
 .popup-overlay {
@@ -168,32 +151,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll(".quick-view-btn");
   const popup = document.getElementById("product-popup");
   const closeBtn = popup.querySelector(".popup-close");
+  const titleEl = popup.querySelector(".popup-title");
+  const priceEl = popup.querySelector(".popup-price");
+  const descEl = popup.querySelector(".popup-description");
   const variantSelect = popup.querySelector(".popup-variants");
-  const variantInput = popup.querySelector(".popup-variant-id");
+  const addToCartBtn = popup.querySelector(".popup-add-to-cart");
 
+  let currentProduct = null;
+
+  // Open popup
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       const handle = btn.getAttribute("data-handle");
       fetch(`/products/${handle}.js`)
         .then(res => res.json())
         .then(product => {
-          popup.querySelector(".popup-title").innerText = product.title;
-          popup.querySelector(".popup-price").innerText = 
-            (product.price / 100).toFixed(2);
-          popup.querySelector(".popup-description").innerHTML = product.description;
+          currentProduct = product;
+          titleEl.innerText = product.title;
+          priceEl.innerText = "₹" + (product.price / 100).toFixed(2);
+          descEl.innerHTML = product.description;
 
           variantSelect.innerHTML = "";
           product.variants.forEach(variant => {
             const opt = document.createElement("option");
             opt.value = variant.id;
-            opt.textContent = variant.title + " - " + 
-              (variant.price / 100).toFixed(2);
+            opt.textContent = variant.title + " - ₹" + (variant.price / 100).toFixed(2);
             variantSelect.appendChild(opt);
-          });
-
-          variantInput.value = product.variants[0].id;
-          variantSelect.addEventListener("change", e => {
-            variantInput.value = e.target.value;
           });
 
           popup.style.display = "flex";
@@ -201,8 +184,50 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Close popup
   closeBtn.addEventListener("click", () => {
     popup.style.display = "none";
+  });
+
+  // Add to cart
+  addToCartBtn.addEventListener("click", () => {
+    if (!currentProduct) return;
+
+    const selectedVariantId = variantSelect.value;
+
+    // Add main product
+    fetch("/cart/add.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selectedVariantId, quantity: 1 })
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Added to cart:", data);
+
+      // Check if selected variant matches condition (Black + Medium)
+      const selectedVariant = currentProduct.variants.find(v => v.id == selectedVariantId);
+      if (selectedVariant && selectedVariant.title.includes("Black") && selectedVariant.title.includes("Medium")) {
+        // Add Soft Winter Jacket automatically
+        fetch("/products/soft-winter-jacket.js")
+          .then(res => res.json())
+          .then(jacket => {
+            const jacketVariant = jacket.variants[0];
+            return fetch("/cart/add.js", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: jacketVariant.id, quantity: 1 })
+            });
+          })
+          .then(res => res.json())
+          .then(data => {
+            console.log("Soft Winter Jacket also added:", data);
+          });
+      }
+
+      popup.style.display = "none";
+    })
+    .catch(err => console.error("Cart error:", err));
   });
 });
 </script>
